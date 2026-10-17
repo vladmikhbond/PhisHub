@@ -77,12 +77,15 @@ def login(
     return Token(access_token=create_access_token(user.id))
 
 
+#==================================================================================
+
 @app.put("/data/{key}", response_model=RecordRead)
 async def save_json(
     request: Request,
     body: object = Body(...),
     key: str = Path(min_length=1, max_length=255),
     db: Session = Depends(get_db),
+    # current_user: Annotated[User, Depends(get_current_user)]
     current_user: User = Depends(get_current_user),
 ):
     try:

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Отримати запис</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+        margin: 2rem auto;
+        max-width: 36rem;
+        padding: 0 1rem;
+      }
+
+      label {
+        display: block;
+        margin-top: 1rem;
+      }
+
+      input,
+      button {
+        box-sizing: border-box;
+        font: inherit;
+        padding: 0.5rem;
+        width: 100%;
+      }
+
+      button {
+        cursor: pointer;
+        margin-top: 1rem;
+      }
+
+      pre {
+        background: #f3f4f6;
+        overflow-wrap: anywhere;
+        padding: 1rem;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h2>Отримати запис</h2>  
+      <input id="key" name="key" value="kkk">
+      <button id="getButton">Get</button>
+      <p id="resultOutput"></p>
+    </main>
+    <script>
+      
+
+      getButton.addEventListener("click", async (event) => {
+        try {
+          //
+          const accessToken = sessionStorage.getItem("accessToken");
+
+          const dataResponse = await fetch(`/data/${key.value}`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          const data = await dataResponse.json();
+          resultOutput.textContent = JSON.stringify(
+            dataResponse.ok ? data : { status: dataResponse.status, detail: data.detail },
+            null,
+            2,
+          );
+        } catch (error) {
+          alert(error.message);
+        }
+      });
+    </script>
+  </body>
+</html>
