@@ -26,6 +26,7 @@ uvicorn app.main:app --reload --host 0.0.0.0
    ```
 
 API буде доступне на `http://localhost:8000`, документація Swagger — на `http://localhost:8000/docs`. База зберігається в окремому Docker volume `sqlite-data`.
+Сторінка `http://localhost:8000/` дає змогу наявному користувачу отримати токен і переглянути запис `/data/kkk`.
 
 Для локальної розробки без Docker:
 
@@ -46,6 +47,7 @@ uvicorn app.main:app --reload
 - `GET /data/{key}` — отримати значення.
 - `DELETE /data/{key}` — видалити значення.
 - `GET /health` — перевірка стану сервісу.
+- `GET /` — сторінка входу, яка отримує токен та запитує `GET /data/kkk`.
 
 Для операцій із `/data` передавайте токен у заголовку `Authorization: Bearer <token>`.
 
@@ -66,4 +68,4 @@ curl -X PUT http://localhost:8000/data/settings \
   -d '{"theme":"dark","notifications":true}'
 ```
 
-Access token дійсний 30 хвилин. Не використовуйте `.env.example` секрет у production і не додавайте `.env` до системи контролю версій. Для локального запуску без Docker встановіть власне значення `JWT_SECRET_KEY`.
+Access token дійсний 90 хвилин. Не використовуйте `.env.example` секрет у production і не додавайте `.env` до системи контролю версій. Для локального запуску без Docker встановіть власне значення `JWT_SECRET_KEY`.

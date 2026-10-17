@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Доступ до JSON-запису</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        line-height: 1.5;
+        margin: 2rem auto;
+        max-width: 36rem;
+        padding: 0 1rem;
+      }
+
+      label {
+        display: block;
+        margin-top: 1rem;
+      }
+
+      input,
+      button {
+        box-sizing: border-box;
+        font: inherit;
+        padding: 0.5rem;
+        width: 100%;
+      }
+
+      button {
+        cursor: pointer;
+        margin-top: 1rem;
+      }
+
+      pre {
+        background: #f3f4f6;
+        overflow-wrap: anywhere;
+        padding: 1rem;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Отримати запис /data/kkk</h1>
+      <p>Увійдіть із наявним обліковим записом. Сторінка отримає токен і виконає GET-запит.</p>
+      <form id="login-form">
+        <label for="username">Ім'я користувача</label>
+        <input id="username" name="username" autocomplete="username" required>
+
+        <label for="password">Пароль</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+        <button type="submit">Увійти й отримати запис</button>
+      </form>
+      <section aria-live="polite">
+        <h2>Токен доступу</h2>
+        <pre id="token">Ще не отримано</pre>
+        <h2>Результат запиту</h2>
+        <pre id="result">Запит ще не виконано</pre>
+      </section>
+    </main>
+    <script>
+      const form = document.querySelector("#login-form");
+      const tokenOutput = document.querySelector("#token");
+      const resultOutput = document.querySelector("#result");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        tokenOutput.textContent = "Отримання токена...";
+        resultOutput.textContent = "Очікування...";
+
+        const formData = new FormData(form);
+        const credentials = new URLSearchParams();
+        credentials.set("username", formData.get("username"));
+        credentials.set("password", formData.get("password"));
+
+        try {
+          const loginResponse = await fetch("/auth/token", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: credentials,
+          });
+          const loginData = await loginResponse.json();
+          if (!loginResponse.ok) {
+            throw new Error(loginData.detail || `Помилка входу (${loginResponse.status})`);
+          }
+
+          const accessToken = loginData.access_token;
+          tokenOutput.textContent = accessToken;
+
+          const dataResponse = await fetch("/data/kkk", {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          const data = await dataResponse.json();
+          resultOutput.textContent = JSON.stringify(
+            dataResponse.ok ? data : { status: dataResponse.status, detail: data.detail },
+            null,
+            2,
+          );
+        } catch (error) {
+          resultOutput.textContent = error.message;
+          if (tokenOutput.textContent === "Отримання токена...") {
+            tokenOutput.textContent = "Не вдалося отримати токен";
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

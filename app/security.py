@@ -21,7 +21,7 @@ JWT_SECRET_KEY = os.getenv(
     "dev-only-change-this-secret-before-deployment",
 )
 JWT_ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 90
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 

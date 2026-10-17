@@ -1,8 +1,10 @@
 import json
 from contextlib import asynccontextmanager
+from pathlib import Path as FilePath
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Path, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -31,7 +33,6 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
-
 
 @app.get("/health")
 def health_check():
@@ -151,3 +152,10 @@ def delete_json(
         )
     db.delete(record)
     db.commit()
+
+
+app.mount(
+    "/",
+    StaticFiles(directory=FilePath(__file__).parent / "static", html=True),
+    name="static",
+)
