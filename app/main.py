@@ -1,6 +1,7 @@
 import json
 from contextlib import asynccontextmanager
 from pathlib import Path as FilePath
+from typing import Annotated
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Path, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -44,7 +45,10 @@ def health_check():
     response_model=UserRead,
     status_code=status.HTTP_201_CREATED,
 )
-def register(user_data: UserCreate, db: Session = Depends(get_db)):
+def register(
+    user_data: UserCreate,
+    db: Annotated[Session, Depends(get_db)],
+):
     user = User(
         username=user_data.username,
         password_hash=hash_password(user_data.password),
@@ -64,8 +68,8 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
 
 @app.post("/auth/token", response_model=Token)
 def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db),
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    db: Annotated[Session, Depends(get_db)],
 ):
     user = db.scalar(select(User).where(User.username == form_data.username))
     if user is None or not verify_password(form_data.password, user.password_hash):
@@ -82,11 +86,10 @@ def login(
 @app.put("/data/{key}", response_model=RecordRead)
 async def save_json(
     request: Request,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
     body: object = Body(...),
     key: str = Path(min_length=1, max_length=255),
-    db: Session = Depends(get_db),
-    # current_user: Annotated[User, Depends(get_current_user)]
-    current_user: User = Depends(get_current_user),
 ):
     try:
         json.loads(
@@ -118,9 +121,9 @@ async def save_json(
 
 @app.get("/data/{key}", response_model=RecordRead)
 def read_json(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
     key: str = Path(min_length=1, max_length=255),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     record = db.scalar(
         select(JsonRecord).where(
@@ -138,9 +141,9 @@ def read_json(
 
 @app.delete("/data/{key}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_json(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
     key: str = Path(min_length=1, max_length=255),
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
 ):
     record = db.scalar(
         select(JsonRecord).where(
