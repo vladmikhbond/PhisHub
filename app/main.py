@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.database import Base, engine, get_db
 from app.models import SceneRecord, User
-from app.schemas import RecordRead, Token, UserCreate, UserRead
+from app.schemas import RecordRead, Token, UserCreate, UserRead, Records
 from app.security import (
     create_access_token,
     get_current_user,
@@ -20,7 +20,6 @@ from app.security import (
     reject_nonstandard_json_constant,
     verify_password,
 )
-
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
@@ -39,7 +38,8 @@ app = FastAPI(
 def health_check():
     return {"status": "ok"}
 
-
+# Регістрація юзера
+#
 @app.post(
     "/auth/register",
     response_model=UserRead,
@@ -82,6 +82,21 @@ def login(
 
 
 #==================================================================================
+
+# Отримати всі ключі сцен поточного користувача
+#
+@app.get("/data/keys", response_model=Records)
+def read_keys(
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+):
+    keys = db.scalars(
+        select(SceneRecord.key)
+        .where(SceneRecord.user_id == current_user.id)
+        .order_by(SceneRecord.key)
+    ).all()
+    return Records(keys=keys)
+
 
 # Зберегти сцену в базі даних
 # 
@@ -154,6 +169,7 @@ def delete_json(
     db.commit()
 
 
+# Статичний контент має бути останнім, щоб не перехоплювати API-маршрути.
 app.mount(
     "/",
     StaticFiles(directory=FilePath(__file__).parent / "static", html=True),

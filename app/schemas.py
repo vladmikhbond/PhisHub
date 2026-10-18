@@ -19,3 +19,7 @@ class Token(BaseModel):
 class RecordRead(BaseModel):
     key: str
     value: object
+
+class Records(BaseModel):
+    keys: list[str]
+    

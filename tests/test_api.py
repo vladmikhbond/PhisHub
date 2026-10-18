@@ -83,6 +83,22 @@ def test_data_requires_authentication(client: TestClient):
     assert response.status_code == 401
 
 
+def test_data_keys_returns_only_current_users_keys(client: TestClient):
+    alice_token = register_and_login(client, "alice")
+    alice_headers = {"Authorization": f"Bearer {alice_token}"}
+    bob_token = register_and_login(client, "bob")
+    bob_headers = {"Authorization": f"Bearer {bob_token}"}
+
+    client.put("/data/zeta", headers=alice_headers, json={"owner": "alice"})
+    client.put("/data/alpha", headers=alice_headers, json={"owner": "alice"})
+    client.put("/data/bob-only", headers=bob_headers, json={"owner": "bob"})
+
+    response = client.get("/data/keys", headers=alice_headers)
+
+    assert response.status_code == 200
+    assert response.json() == {"keys": ["alpha", "zeta"]}
+
+
 def test_homepage_serves_login_page_for_data_record(client: TestClient):
     response = client.get("/")
     assert response.status_code == 200

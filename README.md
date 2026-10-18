@@ -1,4 +1,4 @@
-# JSON Key-Value API
+# JSON PhisHub API
 
 FastAPI-сервіс для збереження JSON у SQLite. Користувачі автентифікуються через JWT; ключі та значення належать окремому користувачу.
 
@@ -37,7 +37,9 @@ pip install -r requirements-dev.txt
 uvicorn app.main:app --reload
 ```
 
-Тести: `pytest`.
+## Запуск тестів
+
+`python -m pytest`
 
 ## API
 
