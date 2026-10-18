@@ -20,7 +20,7 @@ FastAPI-сервіс для збереження сцен у SQLite.
 ```
 
 В JS додатку є класс Controller, а в ньому метод addDataHandlers().
-Метод замінюється на
+Цей метод замінюється на
 
 ```js
   addDataHandlers() {
