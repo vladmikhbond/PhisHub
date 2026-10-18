@@ -963,6 +963,9 @@ var Controller = class {
       window.open("help.html", "_blank")?.focus();
     });
   }
+
+  //#region ADDDATAHANDLERS
+
   addDataHandlers() {
     const savingSelect = document.getElementById("savingSelect");
     const sceneName = document.getElementById("sceneName");
@@ -1052,7 +1055,7 @@ var Controller = class {
       }
     });
 
-
+    // Наповнює список сцен
     async function fillOptions() {
       
       let json;
@@ -1076,6 +1079,9 @@ var Controller = class {
       }        
     }
   }
+
+  //#endregion ADDDATAHANDLERS 
+
   //#region step-stop-run
   timestamp = Date.now();
   step() {

@@ -1,6 +1,142 @@
-# JSON PhisHub API
+# PhisHub
 
-FastAPI-сервіс для збереження JSON у SQLite. Користувачі автентифікуються через JWT; ключі та значення належать окремому користувачу.
+FastAPI-сервіс для збереження сцен у SQLite.
+
+Користувачі автентифікуються через JWT; ключі та значення належать окремому користувачу.
+
+## Вимоги до клієнтских додатків
+
+Папка додатку знаходиться в папці app/static.
+
+В папці додатку є сторінка index.html.
+
+На сторінці index.html є посилання на JS і елементи
+
+```sh
+  <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
+  <input id="sceneName" type="text" class="scene-name" title="Scene name" >
+  <select id="savingSelect" class="scene-select" ></select>
+  <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
+```
+
+В JS додатку є класс Controller, а в ньому метод addDataHandlers().
+Метод замінюється на
+
+```js
+  addDataHandlers() {
+    const savingSelect = document.getElementById("savingSelect");
+    const sceneName = document.getElementById("sceneName");
+    const saveSceneButton = document.getElementById("saveSceneButton");
+    const removeSceneButton = document.getElementById("removeSceneButton");
+
+    fillOptions().then();
+
+    // Зберегти сцену в базі даних
+    //
+    saveSceneButton.addEventListener("click", async () => {
+      if (!sceneName.value) 
+        return;
+      try {
+        //
+        const accessToken = sessionStorage.getItem("accessToken");
+        const val = Store.serialize(this.space);
+
+        const putResponse = await fetch(`/data/${sceneName.value}`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${accessToken}`, 
+                    "Content-Type": "application/json", },
+          body: val,
+        });
+
+        if (putResponse.ok) {
+          const option = document.createElement("option");
+          option.value = sceneName.value;
+          option.textContent = sceneName.value;
+          savingSelect.appendChild(option);
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+    
+    // Завантажити сцену з бази даних
+    //
+    savingSelect.addEventListener("change", async () => {
+      
+      let key = savingSelect.selectedOptions[0].value;
+      let json;
+      try {
+        const accessToken = sessionStorage.getItem("accessToken");
+        const dataResponse = await fetch(`/data/${key}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        json = await dataResponse.json();
+      } catch (error) {
+        alert(error.message);
+      } 
+      if (json) {
+        let space2 = Store.deserialize( JSON.stringify( json.value));
+        if (space2) {
+          Object.assign(this.space, space2);
+          this.view.draw();
+          this.view.clearCanvas2();
+          this.stop();
+        }
+      }
+      savingSelect.selectedIndex = -1;
+    });
+
+    // Видалити сцену з бази даних
+    //     
+    removeSceneButton.addEventListener("click", async () => {
+
+      if (!sceneName.value) 
+        return;
+      try {
+        //
+        const accessToken = sessionStorage.getItem("accessToken");
+        const delResponse = await fetch(`/data/${sceneName.value}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${accessToken}`, },
+        });
+
+        if (delResponse.ok) { 
+          // delete from UI         
+          const option = Array.from(savingSelect.options).find(
+            (option) => option.value === sceneName.value
+          );
+          if (option) option.remove();
+        }
+      } catch (error) {
+        alert(error.message);
+      }
+    });
+
+    // Наповнює список сцен
+    async function fillOptions() {
+      
+      let json;
+      try {
+        const accessToken = sessionStorage.getItem("accessToken");
+        const dataResponse = await fetch("/data/keys", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        json = await dataResponse.json();
+      } catch (error) {
+        alert(error.message);
+      } 
+      if (json) {
+        savingSelect.innerHTML = "";        
+        json.keys.forEach((key) => {
+          const option = document.createElement("option");
+          option.value = key;
+          option.textContent = key;
+          savingSelect.appendChild(option);
+        });
+      }        
+    }
+  }
+```
 
 ## Розробка у VS Code Dev Container
 
@@ -71,3 +207,4 @@ curl -X PUT http://localhost:8000/data/settings \
 ```
 
 Access token дійсний 90 хвилин. Не використовуйте `.env.example` секрет у production і не додавайте `.env` до системи контролю версій. Для локального запуску без Docker встановіть власне значення `JWT_SECRET_KEY`.
+
