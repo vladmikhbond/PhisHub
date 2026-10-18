@@ -969,7 +969,7 @@ var Controller = class {
     const saveSceneButton = document.getElementById("saveSceneButton");
     const removeSceneButton = document.getElementById("removeSceneButton");
 
-    // fillSavedSelectOptions();
+    fillOptions().then();
 
     // Зберегти сцену в базі даних
     //
@@ -1003,30 +1003,26 @@ var Controller = class {
     //
     savingSelect.addEventListener("change", async () => {
       
-    let key = savingSelect.selectedOptions[0].value;
-    let json;
-    try {
-      //
-      const accessToken = sessionStorage.getItem("accessToken");
-
-      const dataResponse = await fetch(`/data/${key}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      });
-      json = await dataResponse.json();
-    } catch (error) {
-      alert(error.message);
-    } 
-    if (json) {
-      let space2 = Store.deserialize( JSON.stringify( json.value));
-      if (space2) {
-        Object.assign(this.space, space2);
-        this.view.draw();
-        this.view.clearCanvas2();
-        this.stop();
+      let key = savingSelect.selectedOptions[0].value;
+      let json;
+      try {
+        const accessToken = sessionStorage.getItem("accessToken");
+        const dataResponse = await fetch(`/data/${key}`, {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        json = await dataResponse.json();
+      } catch (error) {
+        alert(error.message);
+      } 
+      if (json) {
+        let space2 = Store.deserialize( JSON.stringify( json.value));
+        if (space2) {
+          Object.assign(this.space, space2);
+          this.view.draw();
+          this.view.clearCanvas2();
+          this.stop();
+        }
       }
-    }
-      
-      this.restoreSpace(key, localStorage);
       savingSelect.selectedIndex = -1;
     });
 
@@ -1044,7 +1040,8 @@ var Controller = class {
           headers: { Authorization: `Bearer ${accessToken}`, },
         });
 
-        if (delResponse.ok) {          
+        if (delResponse.ok) { 
+          // delete from UI         
           const option = Array.from(savingSelect.options).find(
             (option) => option.value === sceneName.value
           );
@@ -1053,33 +1050,30 @@ var Controller = class {
       } catch (error) {
         alert(error.message);
       }
-
-
-
-
-
-
-
-
-      let key = sceneName.value;
-      const val = localStorage.getItem(key);
-      if (val) {
-        localStorage.removeItem(key);
-        fillSavedSelectOptions();
-      }
     });
 
 
-    function fillSavedSelectOptions() {
-      const keys = Object.keys(localStorage);
-      keys.sort();
-      savingSelect.innerHTML = "";
-      keys.forEach((key) => {
-        const option = document.createElement("option");
-        option.value = key;
-        option.textContent = key;
-        savingSelect.appendChild(option);
-      });
+    async function fillOptions() {
+      
+      let json;
+      try {
+        const accessToken = sessionStorage.getItem("accessToken");
+        const dataResponse = await fetch("/data/keys", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        json = await dataResponse.json();
+      } catch (error) {
+        alert(error.message);
+      } 
+      if (json) {
+        savingSelect.innerHTML = "";        
+        json.keys.forEach((key) => {
+          const option = document.createElement("option");
+          option.value = key;
+          option.textContent = key;
+          savingSelect.appendChild(option);
+        });
+      }        
     }
   }
   //#region step-stop-run
