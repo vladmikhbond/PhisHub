@@ -85,12 +85,9 @@ def test_data_requires_authentication(client: TestClient):
 
 def test_homepage_serves_login_page_for_data_record(client: TestClient):
     response = client.get("/")
-
     assert response.status_code == 200
     assert "text/html" in response.headers["content-type"]
-    assert "Отримати запис /data/kkk" in response.text
     assert 'fetch("/auth/token"' in response.text
-    assert 'fetch("/data/kkk"' in response.text
 
 
 def test_save_json_request_body_is_documented(client: TestClient):

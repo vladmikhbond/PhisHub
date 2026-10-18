@@ -12,8 +12,8 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(256))
 
 
-class JsonRecord(Base):
-    __tablename__ = "json_records"
+class SceneRecord(Base):
+    __tablename__ = "scenes"
     __table_args__ = (UniqueConstraint("user_id", "key", name="uq_user_record_key"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)

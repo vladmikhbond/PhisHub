@@ -57,12 +57,8 @@
           const dataResponse = await fetch(`/data/${key.value}`, {
             headers: { Authorization: `Bearer ${accessToken}` },
           });
-          const data = await dataResponse.json();
-          resultOutput.textContent = JSON.stringify(
-            dataResponse.ok ? data : { status: dataResponse.status, detail: data.detail },
-            null,
-            2,
-          );
+          const data = await dataResponse.text();
+          resultOutput.textContent = data;
         } catch (error) {
           alert(error.message);
         }

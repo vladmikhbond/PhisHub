@@ -11,7 +11,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from app.database import Base, engine, get_db
-from app.models import JsonRecord, User
+from app.models import SceneRecord, User
 from app.schemas import RecordRead, Token, UserCreate, UserRead
 from app.security import (
     create_access_token,
@@ -83,6 +83,8 @@ def login(
 
 #==================================================================================
 
+# Зберегти сцену в базі даних
+# 
 @app.put("/data/{key}", response_model=RecordRead)
 async def save_json(
     request: Request,
@@ -91,26 +93,15 @@ async def save_json(
     body: object = Body(...),
     key: str = Path(min_length=1, max_length=255),
 ):
-    try:
-        json.loads(
-            (await request.body()).decode("utf-8"),
-            parse_constant=reject_nonstandard_json_constant,
-        )
-    except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Request body must contain valid JSON",
-        ) from None
-
     value = body
     record = db.scalar(
-        select(JsonRecord).where(
-            JsonRecord.user_id == current_user.id,
-            JsonRecord.key == key,
+        select(SceneRecord).where(
+            SceneRecord.user_id == current_user.id,
+            SceneRecord.key == key,
         )
     )
     if record is None:
-        record = JsonRecord(user_id=current_user.id, key=key, value=value)
+        record = SceneRecord(user_id=current_user.id, key=key, value=value)
         db.add(record)
     else:
         record.value = value
@@ -119,6 +110,8 @@ async def save_json(
     return RecordRead(key=key, value=value)
 
 
+#  Завантажити сцену з бази даних
+#     
 @app.get("/data/{key}", response_model=RecordRead)
 def read_json(
     db: Annotated[Session, Depends(get_db)],
@@ -126,9 +119,9 @@ def read_json(
     key: str = Path(min_length=1, max_length=255),
 ):
     record = db.scalar(
-        select(JsonRecord).where(
-            JsonRecord.user_id == current_user.id,
-            JsonRecord.key == key,
+        select(SceneRecord).where(
+            SceneRecord.user_id == current_user.id,
+            SceneRecord.key == key,
         )
     )
     if record is None:
@@ -138,7 +131,8 @@ def read_json(
         )
     return RecordRead(key=record.key, value=record.value)
 
-
+# Видалити сцену з бази даних
+# 
 @app.delete("/data/{key}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_json(
     db: Annotated[Session, Depends(get_db)],
@@ -146,9 +140,9 @@ def delete_json(
     key: str = Path(min_length=1, max_length=255),
 ):
     record = db.scalar(
-        select(JsonRecord).where(
-            JsonRecord.user_id == current_user.id,
-            JsonRecord.key == key,
+        select(SceneRecord).where(
+            SceneRecord.user_id == current_user.id,
+            SceneRecord.key == key,
         )
     )
     if record is None:
