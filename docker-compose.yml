@@ -6,6 +6,7 @@ services:
     environment:
       DATABASE_URL: sqlite:////app/data/app.db
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:?Set JWT_SECRET_KEY in .env}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
     volumes:
       - sqlite-data:/app/data
     restart: unless-stopped

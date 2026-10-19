@@ -972,6 +972,12 @@ var Controller = class {
     const sceneName = document.getElementById("sceneName");
     const saveSceneButton = document.getElementById("saveSceneButton");
     const removeSceneButton = document.getElementById("removeSceneButton");
+    const getCsrfToken = () => {
+      const cookie = document.cookie
+        .split("; ")
+        .find((item) => item.startsWith("csrf_token="));
+      return cookie ? decodeURIComponent(cookie.slice("csrf_token=".length)) : "";
+    };
 
     // Наповнює список сцен і завантажує першу сцену
     fillOptions().then(s => {
@@ -984,13 +990,14 @@ var Controller = class {
       if (!sceneName.value) 
         return;
       try {
-        const accessToken = sessionStorage.getItem("accessToken");
         const val = Store.serialize(this.space);
 
         const putResponse = await fetch(`/data/${sceneName.value}`, {
           method: "PUT",
-          headers: { Authorization: `Bearer ${accessToken}`, 
-                    "Content-Type": "application/json", },
+          headers: {
+            "X-CSRF-Token": getCsrfToken(),
+            "Content-Type": "application/json",
+          },
           body: val,
         });
 
@@ -1008,10 +1015,7 @@ var Controller = class {
       
       let key = sceneSelect.selectedOptions[0].value;
       try {
-        const accessToken = sessionStorage.getItem("accessToken");
-        const dataResponse = await fetch(`/data/${key}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        const dataResponse = await fetch(`/data/${key}`);
 
         if (dataResponse.ok) {
           const json = await dataResponse.json();
@@ -1038,10 +1042,9 @@ var Controller = class {
         return;
       try {
         //
-        const accessToken = sessionStorage.getItem("accessToken");
         const delResponse = await fetch(`/data/${sceneName.value}`, {
           method: "DELETE",
-          headers: { Authorization: `Bearer ${accessToken}`, },
+          headers: { "X-CSRF-Token": getCsrfToken() },
         });
 
         if (delResponse.ok) { 
@@ -1057,10 +1060,7 @@ var Controller = class {
       
       let json;
       try {
-        const accessToken = sessionStorage.getItem("accessToken");
-        const dataResponse = await fetch("/data/keys", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+        const dataResponse = await fetch("/data/keys");
         json = await dataResponse.json();
       } catch (error) {
         console.error(error.message);

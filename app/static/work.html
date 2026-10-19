@@ -51,12 +51,7 @@
 
       getButton.addEventListener("click", async (event) => {
         try {
-          //
-          const accessToken = sessionStorage.getItem("accessToken");
-
-          const dataResponse = await fetch(`/data/${key.value}`, {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
+          const dataResponse = await fetch(`/data/${key.value}`);
           const data = await dataResponse.text();
           resultOutput.textContent = data;
         } catch (error) {

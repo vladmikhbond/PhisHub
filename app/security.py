@@ -7,8 +7,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated, NoReturn
 
 import jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends, Header, HTTPException, Request, status
+from fastapi.security import APIKeyCookie
 from jwt import InvalidTokenError
 from sqlalchemy.orm import Session
 
@@ -22,7 +22,15 @@ JWT_SECRET_KEY = os.getenv(
 )
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 90
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
+ACCESS_TOKEN_COOKIE = "access_token"
+CSRF_TOKEN_COOKIE = "csrf_token"
+AUTH_COOKIE_SECURE = os.getenv("AUTH_COOKIE_SECURE", "true").strip().lower() not in {
+    "0",
+    "false",
+    "no",
+    "off",
+}
+access_token_cookie = APIKeyCookie(name=ACCESS_TOKEN_COOKIE, auto_error=False)
 
 
 def hash_password(password: str) -> str:
@@ -55,33 +63,69 @@ def reject_nonstandard_json_constant(value: str) -> NoReturn:
     raise ValueError(f"Invalid JSON constant: {value}")
 
 
-def create_access_token(user_id: int) -> str:
+def create_access_token(user_id: int) -> tuple[str, str]:
     expires_at = datetime.now(timezone.utc) + timedelta(
         minutes=ACCESS_TOKEN_EXPIRE_MINUTES
     )
-    return jwt.encode(
-        {"sub": str(user_id), "exp": expires_at},
+    csrf_token = secrets.token_urlsafe(32)
+    access_token = jwt.encode(
+        {"sub": str(user_id), "exp": expires_at, "csrf": csrf_token},
         JWT_SECRET_KEY,
         algorithm=JWT_ALGORITHM,
     )
+    return access_token, csrf_token
+
+
+def get_access_token_payload(
+    token: Annotated[str | None, Depends(access_token_cookie)],
+) -> dict[str, object]:
+    unauthorized = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or expired access token",
+    )
+    if token is None:
+        raise unauthorized
+
+    try:
+        return jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+    except InvalidTokenError:
+        raise unauthorized from None
 
 
 def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
+    payload: Annotated[dict[str, object], Depends(get_access_token_payload)],
     db: Annotated[Session, Depends(get_db)],
 ) -> User:
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired access token",
-        headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
         user_id = int(payload["sub"])
-    except (InvalidTokenError, KeyError, TypeError, ValueError):
+    except (KeyError, TypeError, ValueError):
         raise unauthorized from None
 
     user = db.get(User, user_id)
     if user is None:
         raise unauthorized
     return user
+
+
+def require_csrf_token(
+    request: Request,
+    payload: Annotated[dict[str, object], Depends(get_access_token_payload)],
+    csrf_header: Annotated[str | None, Header(alias="X-CSRF-Token")] = None,
+) -> None:
+    csrf_cookie = request.cookies.get(CSRF_TOKEN_COOKIE)
+    csrf_claim = payload.get("csrf")
+    if (
+        not isinstance(csrf_claim, str)
+        or csrf_cookie is None
+        or csrf_header is None
+        or not hmac.compare_digest(csrf_cookie, csrf_claim)
+        or not hmac.compare_digest(csrf_header, csrf_claim)
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or missing CSRF token",
+        )

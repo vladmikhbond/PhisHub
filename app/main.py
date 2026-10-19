@@ -2,8 +2,19 @@ import json
 from contextlib import asynccontextmanager
 from pathlib import Path as FilePath
 from typing import Annotated
+from urllib.parse import urlsplit
 
-from fastapi import Body, Depends, FastAPI, HTTPException, Path, Request, status
+from fastapi import (
+    Body,
+    Depends,
+    FastAPI,
+    HTTPException,
+    Path,
+    Request,
+    Response,
+    status,
+)
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import select
@@ -12,12 +23,17 @@ from sqlalchemy.orm import Session
 
 from app.database import Base, engine, get_db
 from app.models import SceneRecord, User
-from app.schemas import RecordRead, Token, UserCreate, UserRead, Records
+from app.schemas import RecordRead, UserCreate, UserRead, Records
 from app.security import (
+    ACCESS_TOKEN_COOKIE,
+    ACCESS_TOKEN_EXPIRE_MINUTES,
+    AUTH_COOKIE_SECURE,
+    CSRF_TOKEN_COOKIE,
     create_access_token,
     get_current_user,
     hash_password,
     reject_nonstandard_json_constant,
+    require_csrf_token,
     verify_password,
 )
 
@@ -66,19 +82,80 @@ def register(
     return user
 
 
-@app.post("/auth/token", response_model=Token)
+@app.post("/auth/token")
 def login(
+    request: Request,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     db: Annotated[Session, Depends(get_db)],
 ):
+    origin = request.headers.get("origin")
+    if origin is not None:
+        try:
+            origin_parts = urlsplit(origin)
+            request_parts = urlsplit(str(request.base_url))
+            same_origin = (
+                origin_parts.scheme.lower() == request_parts.scheme.lower()
+                and (origin_parts.hostname or "").lower()
+                == (request_parts.hostname or "").lower()
+                and origin_parts.port == request_parts.port
+            )
+        except ValueError:
+            same_origin = False
+        if not same_origin:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Cross-origin login is not allowed",
+            )
+
     user = db.scalar(select(User).where(User.username == form_data.username))
     if user is None or not verify_password(form_data.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
         )
-    return Token(access_token=create_access_token(user.id))
+    access_token, csrf_token = create_access_token(user.id)
+    response = JSONResponse({"message": "Login successful"})
+    cookie_max_age = ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    response.set_cookie(
+        key=ACCESS_TOKEN_COOKIE,
+        value=access_token,
+        max_age=cookie_max_age,
+        httponly=True,
+        secure=AUTH_COOKIE_SECURE,
+        samesite="lax",
+        path="/",
+    )
+    response.set_cookie(
+        key=CSRF_TOKEN_COOKIE,
+        value=csrf_token,
+        max_age=cookie_max_age,
+        httponly=False,
+        secure=AUTH_COOKIE_SECURE,
+        samesite="lax",
+        path="/",
+    )
+    return response
+
+
+@app.post("/auth/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    response: Response,
+    _: Annotated[None, Depends(require_csrf_token)],
+):
+    response.delete_cookie(
+        key=ACCESS_TOKEN_COOKIE,
+        secure=AUTH_COOKIE_SECURE,
+        httponly=True,
+        samesite="lax",
+        path="/",
+    )
+    response.delete_cookie(
+        key=CSRF_TOKEN_COOKIE,
+        secure=AUTH_COOKIE_SECURE,
+        httponly=False,
+        samesite="lax",
+        path="/",
+    )
 
 
 #==================================================================================
@@ -105,6 +182,7 @@ async def save_json(
     request: Request,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    _: Annotated[None, Depends(require_csrf_token)],
     body: object = Body(...),
     key: str = Path(min_length=1, max_length=255),
 ):
@@ -152,6 +230,7 @@ def read_json(
 def delete_json(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    _: Annotated[None, Depends(require_csrf_token)],
     key: str = Path(min_length=1, max_length=255),
 ):
     record = db.scalar(
@@ -167,6 +246,11 @@ def delete_json(
         )
     db.delete(record)
     db.commit()
+
+
+@app.get("/", include_in_schema=False)
+def homepage():
+    return FileResponse(FilePath(__file__).parent / "static" / "home.html")
 
 
 # Статичний контент має бути останнім, щоб не перехоплювати API-маршрути.

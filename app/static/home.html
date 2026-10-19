@@ -52,6 +52,7 @@
         <button type="submit">Увійти</button>
       </form>
       <section aria-live="polite">
+        <p id="login-status"></p>
         <ul>
           <li><a href="work.html">A page</a></li>
           <li><a href="maxwell/index.html">Maxwel</a></li>
@@ -60,8 +61,7 @@
     </main>
     <script>
       const form = document.querySelector("#login-form");
-      const tokenOutput = document.querySelector("#token");
-      const resultOutput = document.querySelector("#result");
+      const loginStatus = document.querySelector("#login-status");
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -78,16 +78,13 @@
             body: credentials,
           });
           const loginData = await loginResponse.json();
-          //
-          const accessToken = loginData.access_token;
-          sessionStorage.setItem("accessToken", accessToken);
-
           if (!loginResponse.ok) {
             throw new Error(loginData.detail || `Помилка входу (${loginResponse.status})`);
           }
+          loginStatus.textContent = "Вхід виконано.";
         } catch (error) {
           alert(error.message);
-        } 
+        }
       });
     </script>
   </body>

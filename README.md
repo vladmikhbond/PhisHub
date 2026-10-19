@@ -4,139 +4,11 @@ FastAPI-сервіс для збереження сцен у SQLite.
 
 Користувачі автентифікуються через JWT; ключі та значення належать окремому користувачу.
 
-## Вимоги до клієнтских додатків
+## Клієнтські сторінки та автентифікація
 
-Папка додатку знаходиться в папці app/static.
+Сторінки інтерфейсу розміщені в `app/static/`; головна сторінка входу — `home.html`, а інтерфейс Maxwell — `maxwell/index.html`.
 
-В папці додатку є сторінка index.html.
-
-На сторінці index.html є посилання на JS і елементи
-
-```sh
-  <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
-  <input id="sceneName" type="text" class="scene-name" title="Scene name" >
-  <select id="savingSelect" class="scene-select" ></select>
-  <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
-```
-
-В JS додатку є класс Controller, а в ньому метод addDataHandlers().
-Цей метод замінюється на
-
-```js
-  addDataHandlers() {
-    const savingSelect = document.getElementById("savingSelect");
-    const sceneName = document.getElementById("sceneName");
-    const saveSceneButton = document.getElementById("saveSceneButton");
-    const removeSceneButton = document.getElementById("removeSceneButton");
-
-    fillOptions().then();
-
-    // Зберегти сцену в базі даних
-    //
-    saveSceneButton.addEventListener("click", async () => {
-      if (!sceneName.value) 
-        return;
-      try {
-        //
-        const accessToken = sessionStorage.getItem("accessToken");
-        const val = Store.serialize(this.space);
-
-        const putResponse = await fetch(`/data/${sceneName.value}`, {
-          method: "PUT",
-          headers: { Authorization: `Bearer ${accessToken}`, 
-                    "Content-Type": "application/json", },
-          body: val,
-        });
-
-        if (putResponse.ok) {
-          const option = document.createElement("option");
-          option.value = sceneName.value;
-          option.textContent = sceneName.value;
-          savingSelect.appendChild(option);
-        }
-      } catch (error) {
-        alert(error.message);
-      }
-    });
-    
-    // Завантажити сцену з бази даних
-    //
-    savingSelect.addEventListener("change", async () => {
-      
-      let key = savingSelect.selectedOptions[0].value;
-      let json;
-      try {
-        const accessToken = sessionStorage.getItem("accessToken");
-        const dataResponse = await fetch(`/data/${key}`, {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        json = await dataResponse.json();
-      } catch (error) {
-        alert(error.message);
-      } 
-      if (json) {
-        let space2 = Store.deserialize( JSON.stringify( json.value));
-        if (space2) {
-          Object.assign(this.space, space2);
-          this.view.draw();
-          this.view.clearCanvas2();
-          this.stop();
-        }
-      }
-      savingSelect.selectedIndex = -1;
-    });
-
-    // Видалити сцену з бази даних
-    //     
-    removeSceneButton.addEventListener("click", async () => {
-
-      if (!sceneName.value) 
-        return;
-      try {
-        //
-        const accessToken = sessionStorage.getItem("accessToken");
-        const delResponse = await fetch(`/data/${sceneName.value}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${accessToken}`, },
-        });
-
-        if (delResponse.ok) { 
-          // delete from UI         
-          const option = Array.from(savingSelect.options).find(
-            (option) => option.value === sceneName.value
-          );
-          if (option) option.remove();
-        }
-      } catch (error) {
-        alert(error.message);
-      }
-    });
-
-    // Наповнює список сцен
-    async function fillOptions() {
-      
-      let json;
-      try {
-        const accessToken = sessionStorage.getItem("accessToken");
-        const dataResponse = await fetch("/data/keys", {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        json = await dataResponse.json();
-      } catch (error) {
-        alert(error.message);
-      } 
-      if (json) {
-        savingSelect.innerHTML = "";        
-        json.keys.forEach((key) => {
-          const option = document.createElement("option");
-          option.value = key;
-          option.textContent = key;
-          savingSelect.appendChild(option);
-        });
-      }        
-    }
-  }
-```
+Після входу сервер встановлює JWT у cookie `access_token` з атрибутом `HttpOnly`; токен не повертається JavaScript-коду й не зберігається у Web Storage. Окрема cookie `csrf_token` доступна клієнтському коду. Запити `PUT` і `DELETE` мають передавати її значення в заголовку `X-CSRF-Token`. Cookie мають `SameSite=Lax`; `AUTH_COOKIE_SECURE` за замовчуванням увімкнений, тому розгортання має використовувати HTTPS. Для локального запуску через HTTP встановіть `AUTH_COOKIE_SECURE=false`.
 
 ## Розробка у VS Code Dev Container
 
@@ -147,7 +19,7 @@ FastAPI-сервіс для збереження сцен у SQLite.
 Контейнер використовує образ `mcr.microsoft.com/devcontainers/python:1-3.12-bullseye`. Запустіть API в інтегрованому терміналі:
 
 ```sh
-uvicorn app.main:app --reload --host 0.0.0.0
+AUTH_COOKIE_SECURE=false uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
 Порт `8000` буде перенаправлено на хост; Swagger доступний за адресою `http://localhost:8000/docs`. Для запуску тестів виконайте `pytest`. Локальна SQLite-база за замовчуванням зберігається у `app.db` в каталозі проєкту.
@@ -155,14 +27,14 @@ uvicorn app.main:app --reload --host 0.0.0.0
 ## Запуск у Linux-контейнері
 
 1. Створіть `.env` на основі `.env.example` і задайте випадковий секрет для `JWT_SECRET_KEY` (наприклад, `openssl rand -hex 32`).
-2. Запустіть сервіс:
+2. Для локального HTTP-запуску встановіть `AUTH_COOKIE_SECURE=false` і запустіть сервіс:
 
    ```sh
-   docker compose up --build
+   AUTH_COOKIE_SECURE=false docker compose up --build
    ```
 
 API буде доступне на `http://localhost:8000`, документація Swagger — на `http://localhost:8000/docs`. База зберігається в окремому Docker volume `sqlite-data`.
-Сторінка `http://localhost:8000/` дає змогу наявному користувачу отримати токен і переглянути запис `/data/kkk`.
+Сторінка `http://localhost:8000/` дає змогу увійти наявному користувачу. Для production використовуйте HTTPS і `AUTH_COOKIE_SECURE=true`.
 
 Для локальної розробки без Docker:
 
@@ -170,7 +42,7 @@ API буде доступне на `http://localhost:8000`, документац
 python -m venv .venv
 . .venv/bin/activate
 pip install -r requirements-dev.txt
-uvicorn app.main:app --reload
+AUTH_COOKIE_SECURE=false uvicorn app.main:app --reload
 ```
 
 ## Запуск тестів
@@ -180,16 +52,18 @@ uvicorn app.main:app --reload
 ## API
 
 - `POST /auth/register` — створення користувача, JSON `{"username":"alice","password":"strong-password"}`.
-- `POST /auth/token` — вхід через форму `username`/`password`; повертає JWT.
-- `PUT /data/{key}` — створити або оновити значення. Тіло запиту — будь-яке валідне JSON.
+- `POST /auth/token` — вхід через форму `username`/`password`; встановлює HttpOnly cookie автентифікації та CSRF-cookie.
+- `POST /auth/logout` — видаляє cookie автентифікації; потребує заголовок `X-CSRF-Token`.
+- `PUT /data/{key}` — створити або оновити значення. Тіло запиту — будь-яке валідне JSON; потребує CSRF-заголовок.
 - `GET /data/{key}` — отримати значення.
-- `DELETE /data/{key}` — видалити значення.
+- `GET /data/keys` — отримати ключі поточного користувача.
+- `DELETE /data/{key}` — видалити значення; потребує CSRF-заголовок.
 - `GET /health` — перевірка стану сервісу.
-- `GET /` — сторінка входу, яка отримує токен та запитує `GET /data/kkk`.
+- `GET /` — сторінка входу.
 
-Для операцій із `/data` передавайте токен у заголовку `Authorization: Bearer <token>`.
+Для запитів із браузера cookie надсилаються автоматично. Для `PUT` і `DELETE` JavaScript має прочитати `csrf_token` і передати його в `X-CSRF-Token`; сам JWT доступний лише серверу.
 
-Приклад:
+Приклад для локального HTTP-сервера (`AUTH_COOKIE_SECURE=false`):
 
 ```sh
 curl -X POST http://localhost:8000/auth/register \
@@ -198,12 +72,15 @@ curl -X POST http://localhost:8000/auth/register \
 
 curl -X POST http://localhost:8000/auth/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
-  -d 'username=alice&password=strong-password'
+  -d 'username=alice&password=strong-password' \
+  -c cookies.txt
 
+CSRF_TOKEN=$(awk -F '\t' '$6 == "csrf_token" {print $7}' cookies.txt)
 curl -X PUT http://localhost:8000/data/settings \
-  -H "Authorization: Bearer <token>" \
+  -b cookies.txt \
+  -H "X-CSRF-Token: $CSRF_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"theme":"dark","notifications":true}'
 ```
 
-Access token дійсний 90 хвилин. Не використовуйте `.env.example` секрет у production і не додавайте `.env` до системи контролю версій. Для локального запуску без Docker встановіть власне значення `JWT_SECRET_KEY`.
+Access token дійсний 90 хвилин. Не використовуйте `.env.example` секрет у production і не додавайте `.env` до системи контролю версій. Для production встановіть власний `JWT_SECRET_KEY` і залиште `AUTH_COOKIE_SECURE=true`.

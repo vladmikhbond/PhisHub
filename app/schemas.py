@@ -11,11 +11,6 @@ class UserRead(BaseModel):
     username: str
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
 class RecordRead(BaseModel):
     key: str
     value: object
