@@ -207,4 +207,3 @@ curl -X PUT http://localhost:8000/data/settings \
 ```
 
 Access token дійсний 90 хвилин. Не використовуйте `.env.example` секрет у production і не додавайте `.env` до системи контролю версій. Для локального запуску без Docker встановіть власне значення `JWT_SECRET_KEY`.
-

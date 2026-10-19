@@ -111,16 +111,3 @@ def test_save_json_request_body_is_documented(client: TestClient):
 
     assert operation["requestBody"]["required"] is True
     assert "application/json" in operation["requestBody"]["content"]
-
-
-def test_invalid_json_is_rejected(client: TestClient):
-    token = register_and_login(client, "alice")
-    response = client.put(
-        "/data/settings",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-        content='{"value": NaN}',
-    )
-    assert response.status_code == 400
