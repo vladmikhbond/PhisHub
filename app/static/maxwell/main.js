@@ -1019,9 +1019,9 @@ var Controller = class {
 
         if (dataResponse.ok) {
           const keyValueObject = await dataResponse.json();
-          let space = Store.deserialize(JSON.stringify(keyValueObject.value));                 ////
+          let space = Store.deserialize(JSON.stringify(keyValueObject.value));      ////
           if (space) {
-            Object.assign(this.space, space);
+            Object.assign(this.space, space);                                    ////
             this.view.draw();
             this.view.clearCanvas2();
             this.stop();
