@@ -990,7 +990,7 @@ var Controller = class {
       if (!sceneName.value) 
         return;
       try {
-        const val = Store.serialize(this.space);
+        const val = Store.serialize(this.space);                                 //// 
 
         const putResponse = await fetch(`/data/${sceneName.value}`, {
           method: "PUT",
@@ -1018,10 +1018,10 @@ var Controller = class {
         const dataResponse = await fetch(`/data/${key}`);
 
         if (dataResponse.ok) {
-          const json = await dataResponse.json();
-          let space2 = Store.deserialize( JSON.stringify( json.value));
-          if (space2) {
-            Object.assign(this.space, space2);
+          const keyValueObject = await dataResponse.json();
+          let space = Store.deserialize(JSON.stringify(keyValueObject.value));                 ////
+          if (space) {
+            Object.assign(this.space, space);
             this.view.draw();
             this.view.clearCanvas2();
             this.stop();

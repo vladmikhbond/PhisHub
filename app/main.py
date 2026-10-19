@@ -23,7 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.database import Base, engine, get_db
 from app.models import SceneRecord, User
-from app.schemas import RecordRead, UserCreate, UserRead, Records
+from app.schemas import SceneRead, UserCreate, UserRead, Records
 from app.security import (
     ACCESS_TOKEN_COOKIE,
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -177,9 +177,8 @@ def read_keys(
 
 # Зберегти сцену в базі даних
 # 
-@app.put("/data/{key}", response_model=RecordRead)
+@app.put("/data/{key}", response_model=SceneRead)
 async def save_json(
-    request: Request,
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
     _: Annotated[None, Depends(require_csrf_token)],
@@ -187,42 +186,42 @@ async def save_json(
     key: str = Path(min_length=1, max_length=255),
 ):
     value = body
-    record = db.scalar(
+    scene = db.scalar(
         select(SceneRecord).where(
             SceneRecord.user_id == current_user.id,
             SceneRecord.key == key,
         )
     )
-    if record is None:
-        record = SceneRecord(user_id=current_user.id, key=key, value=value)
-        db.add(record)
+    if scene is None:
+        scene = SceneRecord(user_id=current_user.id, key=key, value=value)
+        db.add(scene)
     else:
-        record.value = value
+        scene.value = value
 
     db.commit()
-    return RecordRead(key=key, value=value)
+    return SceneRead(key=key, value=value)
 
 
-#  Завантажити сцену з бази даних
+# Завантажити сцену з бази даних
 #     
-@app.get("/data/{key}", response_model=RecordRead)
+@app.get("/data/{key}", response_model=SceneRead)
 def read_json(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
     key: str = Path(min_length=1, max_length=255),
 ):
-    record = db.scalar(
+    scene = db.scalar(
         select(SceneRecord).where(
             SceneRecord.user_id == current_user.id,
             SceneRecord.key == key,
         )
     )
-    if record is None:
+    if scene is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Key not found",
         )
-    return RecordRead(key=record.key, value=record.value)
+    return SceneRead(key=scene.key, value=scene.value)
 
 # Видалити сцену з бази даних
 # 
@@ -233,18 +232,18 @@ def delete_json(
     _: Annotated[None, Depends(require_csrf_token)],
     key: str = Path(min_length=1, max_length=255),
 ):
-    record = db.scalar(
+    scene = db.scalar(
         select(SceneRecord).where(
             SceneRecord.user_id == current_user.id,
             SceneRecord.key == key,
         )
     )
-    if record is None:
+    if scene is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Key not found",
         )
-    db.delete(record)
+    db.delete(scene)
     db.commit()
 
 

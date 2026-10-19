@@ -11,7 +11,7 @@ class UserRead(BaseModel):
     username: str
 
 
-class RecordRead(BaseModel):
+class SceneRead(BaseModel):
     key: str
     value: object
 
