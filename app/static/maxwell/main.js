@@ -966,13 +966,17 @@ var Controller = class {
 
   //#region ADDDATAHANDLERS ///////////////////////////////////////////////
 
-  addDataHandlers() {
-    const savingSelect = document.getElementById("savingSelect");
+  addDataHandlers() 
+  {
+    const sceneSelect = document.getElementById("sceneSelect");
     const sceneName = document.getElementById("sceneName");
     const saveSceneButton = document.getElementById("saveSceneButton");
     const removeSceneButton = document.getElementById("removeSceneButton");
 
-    fillOptions().then();
+    // Наповнює список сцен і завантажує першу сцену
+    fillOptions().then(s => {
+      sceneSelect.dispatchEvent(new Event("change"));
+    });
 
     // Зберегти сцену в базі даних
     //
@@ -980,7 +984,6 @@ var Controller = class {
       if (!sceneName.value) 
         return;
       try {
-        //
         const accessToken = sessionStorage.getItem("accessToken");
         const val = Store.serialize(this.space);
 
@@ -1001,28 +1004,30 @@ var Controller = class {
     
     // Завантажити сцену з бази даних
     //
-    savingSelect.addEventListener("change", async () => {
+    sceneSelect.addEventListener("change", async () => {
       
-      let key = savingSelect.selectedOptions[0].value;
-      let json;
+      let key = sceneSelect.selectedOptions[0].value;
       try {
         const accessToken = sessionStorage.getItem("accessToken");
         const dataResponse = await fetch(`/data/${key}`, {
           headers: { Authorization: `Bearer ${accessToken}` },
         });
-        json = await dataResponse.json();
+
+        if (dataResponse.ok) {
+          const json = await dataResponse.json();
+          let space2 = Store.deserialize( JSON.stringify( json.value));
+          if (space2) {
+            Object.assign(this.space, space2);
+            this.view.draw();
+            this.view.clearCanvas2();
+            this.stop();
+          }
+        }
       } catch (error) {
         console.error(error.message);
       } 
-      if (json) {
-        let space2 = Store.deserialize( JSON.stringify( json.value));
-        if (space2) {
-          Object.assign(this.space, space2);
-          this.view.draw();
-          this.view.clearCanvas2();
-          this.stop();
-        }
-      }
+
+
     });
 
     // Видалити сцену з бази даних
@@ -1061,12 +1066,12 @@ var Controller = class {
         console.error(error.message);
       } 
       if (json) {
-        savingSelect.innerHTML = "";        
+        sceneSelect.innerHTML = "";        
         json.keys.forEach((key) => {
           const option = document.createElement("option");
           option.value = key;
           option.textContent = key;
-          savingSelect.appendChild(option);
+          sceneSelect.appendChild(option);
         });
       }        
     }
