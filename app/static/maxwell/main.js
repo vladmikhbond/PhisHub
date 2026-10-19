@@ -964,7 +964,7 @@ var Controller = class {
     });
   }
 
-  //#region ADDDATAHANDLERS
+  //#region ADDDATAHANDLERS ///////////////////////////////////////////////
 
   addDataHandlers() {
     const savingSelect = document.getElementById("savingSelect");
@@ -992,13 +992,10 @@ var Controller = class {
         });
 
         if (putResponse.ok) {
-          const option = document.createElement("option");
-          option.value = sceneName.value;
-          option.textContent = sceneName.value;
-          savingSelect.appendChild(option);
+          await fillOptions();
         }
       } catch (error) {
-        alert(error.message);
+        console.error(error.message);
       }
     });
     
@@ -1015,7 +1012,7 @@ var Controller = class {
         });
         json = await dataResponse.json();
       } catch (error) {
-        alert(error.message);
+        console.error(error.message);
       } 
       if (json) {
         let space2 = Store.deserialize( JSON.stringify( json.value));
@@ -1026,7 +1023,6 @@ var Controller = class {
           this.stop();
         }
       }
-      savingSelect.selectedIndex = -1;
     });
 
     // Видалити сцену з бази даних
@@ -1044,14 +1040,10 @@ var Controller = class {
         });
 
         if (delResponse.ok) { 
-          // delete from UI         
-          const option = Array.from(savingSelect.options).find(
-            (option) => option.value === sceneName.value
-          );
-          if (option) option.remove();
+          await fillOptions();
         }
       } catch (error) {
-        alert(error.message);
+        console.error(error.message);
       }
     });
 
@@ -1066,7 +1058,7 @@ var Controller = class {
         });
         json = await dataResponse.json();
       } catch (error) {
-        alert(error.message);
+        console.error(error.message);
       } 
       if (json) {
         savingSelect.innerHTML = "";        
