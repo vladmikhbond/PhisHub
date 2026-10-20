@@ -13,11 +13,47 @@
           <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
 ```
 
+``` css
+:root {
+    --canvas-width: 500px;
+    --canvas-height: 500px;
+    --element-height: 44px;
+}
+
+/* ------------------ bottom panel ---------------- */
+.bottom-panel {
+   margin-top: 8px;
+} 
+
+.scene-select {
+    display: inline; 
+    height: var(--element-height);
+    width: calc(var(--canvas-width) - 305px);
+}
+.scene-name {
+    display: inline; 
+    width: 150px !important;
+}
+.scene-btn {
+    vertical-align: top; 
+    background-color: lightblue;
+    width: 70px;
+}```
+
+
+
 В main.js додатку має бути класс Controller, а в ньому методи:
 
-getCurrentModelAsJson() - повертає серіалізовану модель у вигляді рядку JSON
+// повертає серіалізовану модель у вигляді рядку JSON
+getCurrentModelAsJson(): string {
+    return ""
+}
 
-setCurrentModelWithJson(jsonStr: str) - оновлює модель з рядку JSON
+
+// оновлює модель з рядку JSON
+setCurrentModelWithJson(jsonStr: string ) {
+
+}
 
 addDataHandlers() - цей метод замінюється на
 
@@ -77,7 +113,7 @@ addDataHandlers() - цей метод замінюється на
 
         if (dataResponse.ok) {
           const keyValueObject = await dataResponse.json();
-          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));
+          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));     ////
         }
       } catch (error) {
         console.error(error.message);

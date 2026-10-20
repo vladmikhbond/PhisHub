@@ -1,0 +1,254 @@
+<DOCTYPE html>
+<html lang="uk">
+   <head>
+   <meta charset="UTF-8">
+   <title>Help</title>
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+   <link rel="stylesheet" href="index.css"> 
+   </head>
+   <body>
+   <main class="container">
+   <h1>Допомога</h1>
+<h2>Зміст</h2>
+<ul>
+<li><a href="#rozmir-prostoru-modeli">Розмір простору моделі</a></li>
+<li><a href="#vikonannya-scenariyu">Виконання сценарію</a></li>
+<li><a href="#komandi">Команди</a></li>
+<li><a href="#keruvannya-pereglyadom">Керування переглядом</a></li>
+<li><a href="#stan-porshnya">Стан поршня</a></li>
+<li><a href="#zberezhennya-i-vidtvorennya-scenariyiv">Збереження і відтворення сценаріїв</a></li>
+<li><a href="#prikladi-scenariyiv">Приклади сценаріїв</a></li>
+</ul>
+<p><a id="rozmir-prostoru-modeli"></a></p>
+<h2>Розмір простору моделі</h2>
+<p><em>W</em>  - ширина модельного простору (100 &lt; W &lt; 10000).</p>
+<p><em>H</em>  - висота модельного простору (100 &lt; H &lt; 10000).</p>
+<p>Після зміни параметрів натисніть Enter, щоб зміни почали діяти.
+Зміна розмірів створює новий пустий модельний простір.</p>
+<p><a id="vikonannya-scenariyu"></a></p>
+<h2>Виконання сценарію</h2>
+<p>Сценарій це послідовнвсть команд, в одному рядку одна команда.</p>
+<p>Для виконання сценарій треба помістити в поле сенарію і натиснути кнопку Exec.</p>
+<p>При виконанні комад, пов&#39;язаних з рухом газу, кнопка Run зупиняє або продовжує плин модельного часу.</p>
+<p>Кожна виконана команда отрмує позначку бара, команда, яка виконується, позначається трикутником.</p>
+<p>Коли виконання сценарію скінчилося, його можна доповнити новими командами.
+Для виконання доданих команд треба знову натиснути кнопку Exec.</p>
+<p>Щоб повторити повністю або частково виконаний сценарій, треба натиснути кнопку C, а потім Exec.</p>
+<p><a id="komandi"></a></p>
+<h2>Команди</h2>
+<p>Команда складається з ключового слова і параметрів.
+Ключове слово на початку рядка і до першого пробіла.</p>
+<p>Пробіл на початку рядка перетворює рядок в коментар.
+Всі інші пробіли значення не мають.</p>
+<p>Параметри подаються в форматі &#39;ім&#39;я=значення&#39; і розділяються комами.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Назва</th>
+<th align="left">Параметри</th>
+<th align="left">Зміст</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">title</td>
+<td align="left">рядок</td>
+<td align="left">рядок відображується в заголовку сторінки</td>
+</tr>
+<tr>
+<td align="left">plunger</td>
+<td align="left">m=100, t=100, n=10000</td>
+<td align="left">створюється поршень</td>
+</tr>
+<tr>
+<td align="left">scale</td>
+<td align="left">p=1, t=1, s=1, v=1, x=1</td>
+<td align="left">масштабування тиску</td>
+</tr>
+<tr>
+<td align="left">intake</td>
+<td align="left">v=, n=</td>
+<td align="left">впуск</td>
+</tr>
+<tr>
+<td align="left">compression</td>
+<td align="left">m=, v=</td>
+<td align="left">стиск</td>
+</tr>
+<tr>
+<td align="left">ignition</td>
+<td align="left">r=, t=</td>
+<td align="left">запалювання</td>
+</tr>
+<tr>
+<td align="left">expansion</td>
+<td align="left">m=, v=</td>
+<td align="left">розширення (робочий хід)</td>
+</tr>
+<tr>
+<td align="left">exhaust</td>
+<td align="left">m=</td>
+<td align="left">випуск</td>
+</tr>
+<tr>
+<td align="left">isobaric</td>
+<td align="left">v=</td>
+<td align="left">ізобара</td>
+</tr>
+<tr>
+<td align="left">adiabatic</td>
+<td align="left">m=</td>
+<td align="left">адіабата</td>
+</tr>
+<tr>
+<td align="left">isohoric</td>
+<td align="left">m=</td>
+<td align="left">ізохора</td>
+</tr>
+<tr>
+<td align="left">isothermic</td>
+<td align="left">m=</td>
+<td align="left">ізотерма</td>
+</tr>
+<tr>
+<td align="left">run</td>
+<td align="left">time=1e6</td>
+<td align="left">просто робить кроки, time - кількість тактів</td>
+</tr>
+</tbody></table>
+<p>Справа від знаку рівняння стоїть значення за замовчанням.</p>
+<p><a id="keruvannya-pereglyadom"></a></p>
+<h2>Керування переглядом</h2>
+<p>Слайдер <em>Vis</em>   - встановлює процент часток газу, що відображуються.</p>
+<p>Флаг <em>Pretty</em>   - робить лінії діаграм гладкішими.</p>
+<p>Слайдер <em>Speed</em> - встановлює інтервал в msec між двома сусідніми моментами модельного часу.</p>
+<p><a id="stan-porshnya"></a></p>
+<h2>Стан поршня</h2>
+<p>Стан газу під поршнем відображується за допомогою трьох діаграм: PV, TV, SV</p>
+<p>Клавіши &#39;p&#39;, &#39;t&#39;, &#39;v&#39;, &#39;s&#39;, &#39;x&#39; керують масштабом діаграм поршня, велика буква збільшує масштаб, мала - зменшує.</p>
+<p>Клавіша &#39;f&#39; фіксує або звільняє поршень.</p>
+<p>Клавіша &#39;1&#39; робить один крок в моедному часі.</p>
+<p>Клавіша &#39;0&#39; очищує діаграми.</p>
+<p><a id="zberezhennya-i-vidtvorennya-scenariyiv"></a></p>
+<h2>Збереження і відтворення сценаріїв</h2>
+<p>Кнопка <strong>⬇</strong> - зберігає поточний сценарій у локальному сховищі браузера.</p>
+<p>Кнопка <strong>⬆</strong> - завантажує збережений сценарій.</p>
+<p>В обох випадках ключ збереження має бути в нижньому полі вводу.</p>
+<p>Якщо Chrome зберігає, але не завантажує сценарії, треба змінити його налаштування.</p>
+<pre><code class="language-text">Settings
+→ Privacy and security
+→ Site settings
+→ Additional content settings
+→ On-device site data
+          Allow sites to save data on your device
+</code></pre>
+<h2>Приклади сценаріїв</h2>
+<p><a id="prikladi-scenariyiv"></a></p>
+<pre><code class="language-javascript">title adiabatic_test
+plunger m=3000, t=100
+scale   p=6, t=13.5, s=0.4, x=2.4
+adiabatic  m=550, time=1000
+adiabatic  m=3000, time=1000
+
+title isobaric_test
+plunger m=3000, t=100
+scale   p=4.5, t=8, s=0.2, x=1.3, v=2.5 
+isobaric   v=50000, time=1000
+isobaric   v=22800, time=1000
+
+title isothermic_test
+plunger m=3000, t=126
+scale   p=6, t=18, s=0.4, x=1.7, v=1.5
+isothermic  m=1000, time=1000
+isothermic  m=3000, time=1000 
+
+title isohoric_test
+plunger m=3000, t=126
+scale   p=6, t=11, s=0.16, x=2.1, v=3
+isohoric   m=900, time=1000
+isohoric  m=3000, time=1000
+
+title         Цикл Отто (бензиновий)
+plunger m=100, n=0
+scale       p=0.1, t=0.8, s=0.1, v=1.2, x=0.1
+intake      v=90000, n=10000
+compression m=8500,   v=12000
+ignition    t=2000
+expansion   m=16000,  v=88000
+exhaust     m=1000,   v=8000  
+
+title   Цикл Брайтона (квазістаціонарний)
+plunger m=3000, t=111.4
+scale   p=5.5, t=9.2, s=0.36, x=1.5
+isobaric   v=36000
+adiabatic  m=550
+isobaric   v=57000
+adiabatic  m=3000
+report brython
+
+
+title   Зворотний цикл Брайтона
+plunger m=3000, t=111.4
+scale   p=5.5, t=9.2, s=0.36, x=1.5
+adiabatic  m=550
+isobaric   v=86000
+adiabatic  m=3000
+isobaric   v=24700
+report rbrython
+
+
+title   Цикл Карно
+plunger m=3000, t=126
+scale   p=6, t=10, s=0.6, x=1.6
+isothermic  m=1600
+adiabatic   m=600
+isothermic  m=1100
+adiabatic   m=3000
+report carnot
+
+title   Зворотний цикл Карно
+plunger m=3000, t=126
+scale   p=6, t=10, s=0.7, x=1.6
+adiabatic   m=1100
+isothermic  m=600
+adiabatic   m=1600
+isothermic  m=3000
+report rcarnot
+
+
+title   Цикл Отто (квазістаціонарний)
+plunger m=3000, t=126
+scale   p=6, t=11, s=0.33, x=1.6
+adiabatic  m=1000
+isohoric   m=300
+adiabatic  m=900
+isohoric   m=3000
+report otto
+
+
+title   Зворотний цикл Отто (квазістаціонарний)
+plunger m=3000, t=126
+scale   p=6, t=11, s=0.33, x=1.6
+isohoric   m=900
+adiabatic  m=300
+isohoric   m=1000
+adiabatic  m=3000
+report rotto
+
+
+title   Цикл Дізеля (квазістаціонарний)
+plunger m=400, n=10000, t=50
+scale      p=1.6, t=2.8, s=0.2, v=1.6, x=0.4
+adiabatic  m=10000
+isobaric   v=40000
+adiabatic  m=2300
+isohoric   m=400
+
+
+title oscillation_test 
+plunger m=3000, t=100
+scale   p=6, t=13.5, s=0.4, x=2.4
+run       time=2000
+</code></pre>
+</main>
+   </body>
+</html>

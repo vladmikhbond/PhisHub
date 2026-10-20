@@ -839,15 +839,9 @@ var Controller = class {
   // Restore the space from a storage by a key.
   // 
   restoreSpace(key, storage) {
-    const val = storage.getItem(key);
-    if (val) {
-      let space2 = Store.deserialize(val);
-      if (space2) {
-        Object.assign(this.space, space2);
-        this.view.draw();
-        this.view.clearCanvas2();
-        this.stop();
-      }
+    const jsonStr = storage.getItem(key);
+    if (jsonStr) {
+      this.setCurrentModelWithJson(jsonStr);
     }
   }
   //#region CreateMode property
@@ -963,23 +957,18 @@ var Controller = class {
       window.open("help.html", "_blank")?.focus();
     });
   }
-
   getCurrentModelAsJson() {
-      return Store.serialize(this.space);
+    return Store.serialize(this.space);
   }
-
   setCurrentModelWithJson(jsonStr) {
-      let space = Store.deserialize(jsonStr); 
-      if (space) {
-          Object.assign(this.space, space); 
-          this.view.draw();
-          this.view.clearCanvas2();
-          this.stop();
-      }
+    let space2 = Store.deserialize(jsonStr);
+    if (space2) {
+      Object.assign(this.space, space2);
+      this.view.draw();
+      this.view.clearCanvas2();
+      this.stop();
+    }
   }
-
-  //#region ADDDATAHANDLERS ///////////////////////////////////////////////
-
   addDataHandlers() 
   {
     const sceneSelect = document.getElementById("sceneSelect");
@@ -1083,9 +1072,6 @@ var Controller = class {
       }        
     }
   }
-
-  
-  //#endregion ADDDATAHANDLERS 
 
   //#region step-stop-run
   timestamp = Date.now();
@@ -1308,3 +1294,4 @@ var space = new Space();
 var view = new View(space);
 new Controller(space, view);
 view.draw();
+//# sourceMappingURL=main.js.map

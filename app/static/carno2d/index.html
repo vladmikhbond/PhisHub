@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Carno2d</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">   
+        <link rel="stylesheet" href="index.css">        
+
+        <link rel="icon" href="./favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    </head>
+<body>
+<main class="container">
+    <h1>
+        <span id="title">Carnot 2d</span>  
+        <span id="info"> </span> 
+        <span id="info2"></span>
+    </h1>
+    <!------------------ top panel ---------------->
+    <section>
+        <input id="sizeParams" type="text" value="W=600; H=550">
+
+        <button id="clearButton" class="command">C</button>
+        <button id="execButton" class="command">Exec</button>
+        <button id="runButton" class="command" title="Play-Pause">Run</button>
+        <button id="helpButton" class="command" onclick="window.open('help.html', '_blank');">Help</button>
+    </section>
+    <section>
+        <label>
+            Vis <span id="visPercentage">10%</span>
+            <input id="visRange" type="range" min="0", max="6" value="2" title="visibility percentage">
+        </label>
+        <label>          
+            Pretty
+            <input id="prettyBox" type="checkbox" > 
+        </label>
+        <label>
+            Speed 
+            <input id="speedRange" type="range" min="0", max="2" value="2" title="Speed of time">
+        </label>
+    </section>
+        
+    <section> 
+<textarea id="processArea" spellcheck="false" title="Вікно команд">
+title         Цикл Отто (бензиновий)
+plunger m=100, n=0
+scale       p=0.1, t=0.8, s=0.1, v=1.2, x=0.1
+intake      v=90000, n=10000
+compression m=8500,   v=12000
+ignition    t=2000
+expansion   m=16000,  v=88000
+exhaust     m=100,   v=8000  
+</textarea>
+    </section>
+
+    <!-- ------------------canvases------------------  -->
+      <div class="canvas-frame">
+        <canvas id="canvas"  tabindex="0"></canvas>
+        <canvas id="canvas2"></canvas>
+      </div>
+      
+    <!-- ------------------bottom panel------------------  -->
+    <div class="bottom-panel">
+        <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
+        <input id="sceneName" type="text" class="scene-name" title="Scene name" >
+        <select id="sceneSelect" class="scene-select" ></select>
+        <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
+    </div>
+
+    <script type="module" src="main.js"></script>
+</main>
+</body>
+</html>
