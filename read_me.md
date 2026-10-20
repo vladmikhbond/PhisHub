@@ -55,12 +55,15 @@ setCurrentModelWithJson(jsonStr: string ) {
 
 }
 
-addDataHandlers() - цей метод замінюється на
+addDataHandlers() - цей метод замінюється.
+Перед заміною встановити унік знач константи KEY_PREFIX.
+
 
 ``` javascript
-
+///////////////////////////////////////////////////////////////////////
   addDataHandlers() 
   {
+    const KEY_PREFIX = "maxwell.";
     const sceneSelect = document.getElementById("sceneSelect");
     const sceneName = document.getElementById("sceneName");
     const saveSceneButton = document.getElementById("saveSceneButton");
@@ -81,12 +84,10 @@ addDataHandlers() - цей метод замінюється на
     // Зберегти сцену в базі даних
     //
     saveSceneButton.addEventListener("click", async () => {
-      if (!sceneName.value) 
-        return;
       try {
         const val = this.getCurrentModelAsJson();                                  ////
-
-        const putResponse = await fetch(`/data/${sceneName.value}`, {
+        const key = KEY_PREFIX + sceneName.value;
+        const putResponse = await fetch(`/data/${key}`, {
           method: "PUT",
           headers: {
             "X-CSRF-Token": getCsrfToken(),
@@ -106,14 +107,13 @@ addDataHandlers() - цей метод замінюється на
     // Завантажити сцену з бази даних
     //
     sceneSelect.addEventListener("change", async () => {
-      
-      let key = sceneSelect.selectedOptions[0].value;
+      let key = KEY_PREFIX + sceneSelect.selectedOptions[0].value;
       try {
         const dataResponse = await fetch(`/data/${key}`);
 
         if (dataResponse.ok) {
           const keyValueObject = await dataResponse.json();
-          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));     ////
+          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));
         }
       } catch (error) {
         console.error(error.message);
@@ -124,11 +124,10 @@ addDataHandlers() - цей метод замінюється на
     //     
     removeSceneButton.addEventListener("click", async () => {
 
-      if (!sceneName.value) 
-        return;
+      const key = KEY_PREFIX + sceneName.value;
       try {
         //
-        const delResponse = await fetch(`/data/${sceneName.value}`, {
+        const delResponse = await fetch(`/data/${key}`, {
           method: "DELETE",
           headers: { "X-CSRF-Token": getCsrfToken() },
         });
@@ -143,10 +142,9 @@ addDataHandlers() - цей метод замінюється на
 
     // Наповнює список сцен
     async function fillOptions() {
-      
       let json;
       try {
-        const dataResponse = await fetch("/data/keys");
+        const dataResponse = await fetch(`/data/keys/${KEY_PREFIX}`);
         json = await dataResponse.json();
       } catch (error) {
         console.error(error.message);
@@ -162,5 +160,6 @@ addDataHandlers() - цей метод замінюється на
       }        
     }
   }
+///////////////////////////////////////////////////////////////////////
 
 ```

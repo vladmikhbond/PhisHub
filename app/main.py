@@ -162,16 +162,20 @@ def logout(
 
 # Отримати всі ключі сцен поточного користувача
 #
-@app.get("/data/keys", response_model=Records)
+@app.get("/data/keys/{prefix}", response_model=Records)
 def read_keys(
     db: Annotated[Session, Depends(get_db)],
     current_user: Annotated[User, Depends(get_current_user)],
+    prefix: str,
 ):
     keys = db.scalars(
         select(SceneRecord.key)
         .where(SceneRecord.user_id == current_user.id)
         .order_by(SceneRecord.key)
     ).all()
+    # remove prefix
+    keys = [k[len(prefix)::] for k in keys if k.startswith(prefix)]
+
     return Records(keys=keys)
 
 

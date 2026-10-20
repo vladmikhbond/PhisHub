@@ -2132,8 +2132,10 @@ var Controller = class {
   }
 
 
+///////////////////////////////////////////////////////////////////////
   addDataHandlers() 
   {
+    const KEY_PREFIX = "carno2d.";
     const sceneSelect = document.getElementById("sceneSelect");
     const sceneName = document.getElementById("sceneName");
     const saveSceneButton = document.getElementById("saveSceneButton");
@@ -2154,12 +2156,10 @@ var Controller = class {
     // Зберегти сцену в базі даних
     //
     saveSceneButton.addEventListener("click", async () => {
-      if (!sceneName.value) 
-        return;
       try {
         const val = this.getCurrentModelAsJson();                                  ////
-
-        const putResponse = await fetch(`/data/${sceneName.value}`, {
+        const key = KEY_PREFIX + sceneName.value;
+        const putResponse = await fetch(`/data/${key}`, {
           method: "PUT",
           headers: {
             "X-CSRF-Token": getCsrfToken(),
@@ -2179,13 +2179,13 @@ var Controller = class {
     // Завантажити сцену з бази даних
     //
     sceneSelect.addEventListener("change", async () => {
-      let key = sceneSelect.selectedOptions[0].value;
+      let key = KEY_PREFIX + sceneSelect.selectedOptions[0].value;
       try {
         const dataResponse = await fetch(`/data/${key}`);
 
         if (dataResponse.ok) {
           const keyValueObject = await dataResponse.json();
-          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));     ////
+          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));
         }
       } catch (error) {
         console.error(error.message);
@@ -2196,11 +2196,10 @@ var Controller = class {
     //     
     removeSceneButton.addEventListener("click", async () => {
 
-      if (!sceneName.value) 
-        return;
+      const key = KEY_PREFIX + sceneName.value;
       try {
         //
-        const delResponse = await fetch(`/data/${sceneName.value}`, {
+        const delResponse = await fetch(`/data/${key}`, {
           method: "DELETE",
           headers: { "X-CSRF-Token": getCsrfToken() },
         });
@@ -2215,10 +2214,9 @@ var Controller = class {
 
     // Наповнює список сцен
     async function fillOptions() {
-      
       let json;
       try {
-        const dataResponse = await fetch("/data/keys");
+        const dataResponse = await fetch(`/data/keys/${KEY_PREFIX}`);
         json = await dataResponse.json();
       } catch (error) {
         console.error(error.message);
@@ -2234,6 +2232,9 @@ var Controller = class {
       }        
     }
   }
+///////////////////////////////////////////////////////////////////////
+
+
 
   step() {
     this.time++;
