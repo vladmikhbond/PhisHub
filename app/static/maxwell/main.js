@@ -964,6 +964,20 @@ var Controller = class {
     });
   }
 
+  getCurrentModelAsJson() {
+      return Store.serialize(this.space);
+  }
+
+  setCurrentModelWithJson(jsonStr) {
+      let space = Store.deserialize(jsonStr); 
+      if (space) {
+          Object.assign(this.space, space); 
+          this.view.draw();
+          this.view.clearCanvas2();
+          this.stop();
+      }
+  }
+
   //#region ADDDATAHANDLERS ///////////////////////////////////////////////
 
   addDataHandlers() 
@@ -972,6 +986,7 @@ var Controller = class {
     const sceneName = document.getElementById("sceneName");
     const saveSceneButton = document.getElementById("saveSceneButton");
     const removeSceneButton = document.getElementById("removeSceneButton");
+
     const getCsrfToken = () => {
       const cookie = document.cookie
         .split("; ")
@@ -990,7 +1005,7 @@ var Controller = class {
       if (!sceneName.value) 
         return;
       try {
-        const val = Store.serialize(this.space);                                 //// 
+        const val = this.getCurrentModelAsJson();                                  ////
 
         const putResponse = await fetch(`/data/${sceneName.value}`, {
           method: "PUT",
@@ -1019,19 +1034,11 @@ var Controller = class {
 
         if (dataResponse.ok) {
           const keyValueObject = await dataResponse.json();
-          let space = Store.deserialize(JSON.stringify(keyValueObject.value));      ////
-          if (space) {
-            Object.assign(this.space, space);                                    ////
-            this.view.draw();
-            this.view.clearCanvas2();
-            this.stop();
-          }
+          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));
         }
       } catch (error) {
         console.error(error.message);
       } 
-
-
     });
 
     // Видалити сцену з бази даних
@@ -1077,6 +1084,7 @@ var Controller = class {
     }
   }
 
+  
   //#endregion ADDDATAHANDLERS 
 
   //#region step-stop-run

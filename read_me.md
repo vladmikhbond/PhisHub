@@ -13,5 +13,119 @@
           <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
 ```
 
-В main.js додатку є класс Controller, а в ньому метод addDataHandlers().
-Цей метод замінюється.
+В main.js додатку є класс Controller, а в ньому методи:
+
+getCurrentModelAsJson() 
+
+setCurrentModelWithJson(jsonStr: str) 
+
+
+addDataHandlers() - цей метод замінюється на
+
+``` javascript
+
+  addDataHandlers() 
+  {
+    const sceneSelect = document.getElementById("sceneSelect");
+    const sceneName = document.getElementById("sceneName");
+    const saveSceneButton = document.getElementById("saveSceneButton");
+    const removeSceneButton = document.getElementById("removeSceneButton");
+
+    const getCsrfToken = () => {
+      const cookie = document.cookie
+        .split("; ")
+        .find((item) => item.startsWith("csrf_token="));
+      return cookie ? decodeURIComponent(cookie.slice("csrf_token=".length)) : "";
+    };
+
+    // Наповнює список сцен і завантажує першу сцену
+    fillOptions().then(s => {
+      sceneSelect.dispatchEvent(new Event("change"));
+    });
+
+    // Зберегти сцену в базі даних
+    //
+    saveSceneButton.addEventListener("click", async () => {
+      if (!sceneName.value) 
+        return;
+      try {
+        const val = this.getCurrentModelAsJson();                                  ////
+
+        const putResponse = await fetch(`/data/${sceneName.value}`, {
+          method: "PUT",
+          headers: {
+            "X-CSRF-Token": getCsrfToken(),
+            "Content-Type": "application/json",
+          },
+          body: val,
+        });
+
+        if (putResponse.ok) {
+          await fillOptions();
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    });
+    
+    // Завантажити сцену з бази даних
+    //
+    sceneSelect.addEventListener("change", async () => {
+      
+      let key = sceneSelect.selectedOptions[0].value;
+      try {
+        const dataResponse = await fetch(`/data/${key}`);
+
+        if (dataResponse.ok) {
+          const keyValueObject = await dataResponse.json();
+          this.setCurrentModelWithJson(JSON.stringify(keyValueObject.value));
+        }
+      } catch (error) {
+        console.error(error.message);
+      } 
+    });
+
+    // Видалити сцену з бази даних
+    //     
+    removeSceneButton.addEventListener("click", async () => {
+
+      if (!sceneName.value) 
+        return;
+      try {
+        //
+        const delResponse = await fetch(`/data/${sceneName.value}`, {
+          method: "DELETE",
+          headers: { "X-CSRF-Token": getCsrfToken() },
+        });
+
+        if (delResponse.ok) { 
+          await fillOptions();
+        }
+      } catch (error) {
+        console.error(error.message);
+      }
+    });
+
+    // Наповнює список сцен
+    async function fillOptions() {
+      
+      let json;
+      try {
+        const dataResponse = await fetch("/data/keys");
+        json = await dataResponse.json();
+      } catch (error) {
+        console.error(error.message);
+      } 
+      if (json) {
+        sceneSelect.innerHTML = "";        
+        json.keys.forEach((key) => {
+          const option = document.createElement("option");
+          option.value = key;
+          option.textContent = key;
+          sceneSelect.appendChild(option);
+        });
+      }        
+    }
+  }
+
+```
