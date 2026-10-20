@@ -4,7 +4,7 @@
 
 Головна сторінка додатку - index.html.
 
-На сторінці index.html є посилиння на main.js і є 4 елемента
+На сторінці index.html повино бути посилиння на main.js і є 4 елемента
 
 ```sh
           <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
@@ -13,12 +13,11 @@
           <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
 ```
 
-В main.js додатку є класс Controller, а в ньому методи:
+В main.js додатку має бути класс Controller, а в ньому методи:
 
-getCurrentModelAsJson() 
+getCurrentModelAsJson() - повертає серіалізовану модель у вигляді рядку JSON
 
-setCurrentModelWithJson(jsonStr: str) 
-
+setCurrentModelWithJson(jsonStr: str) - оновлює модель з рядку JSON
 
 addDataHandlers() - цей метод замінюється на
 
