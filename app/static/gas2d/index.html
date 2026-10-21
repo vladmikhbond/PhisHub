@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Gas2d</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">   
+        <link rel="stylesheet" href="index.css">        
+
+        <link rel="icon" href="./favicon.ico" type="image/x-icon">
+		<link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    </head>
+<body>
+<main class="container">
+    <h1>
+        Gas 2d  
+        <span id="info"> </span> 
+        <span id="info2"></span>
+    </h1>
+    <!------------------ top panel ---------------->
+    <section>
+        <input id="sizeParams" type="text" value="W=1000; H=600" >
+        <input id="spaceParams" type="text" value="g=0.1; gBall=0" >
+
+        <select id="createMode" aria-label="Select" required>
+            <option value="Info">Info</option>
+            <option value="Gas" selected >Gas</option>
+            <option value="Wall">Wall</option>
+            <option value="Devs">Devs</option>
+        </select>
+        
+        <input id="gasParams" type="text"  value="n=1000; r=1; t=20; m=1" style="width: 250px;" >
+        <input id="wallParams" type="text" value="type='r'" title="type='r[ectangle]'|'p[lunger]'"  style="width: 250px;" >
+        <input id="devsParams" type="text" value="type='m'; c='red'; r=1.001 " title="type='m[eter]'|'h[eater]'"  style="width: 250px;">
+
+        <button id="runButton" title="Run | Stop">Run</button>
+        <button id="helpButton" class="command" onclick="window.open('help.html');">Help</button>
+    </section>
+    <section>
+        Vis <input id="visRange" type="range" min="0", max="6" value="2" title="visibility percentage">
+        <span id="visPercentage">10%</span>
+    </section>
+
+    <!-- ------------------canvases------------------  -->
+      <div class="canvas-frame">
+        <canvas id="canvas"  tabindex="0"></canvas>
+        <canvas id="canvas2"></canvas>
+      </div>
+      
+    <!-- ------------------bottom panel------------------  -->
+    <div class="bottom-panel">
+          <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
+          <input id="sceneName" type="text" class="scene-name" title="Scene name" >
+          <select id="sceneSelect" class="scene-select" ></select>
+          <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
+
+        
+    </div>
+        <textarea id="savedSceneText" rows="1" class="scene-textarea">
+        </textarea>
+    <script type="module" src="main.js"></script>
+
+</main>
+</body>
+</html>
