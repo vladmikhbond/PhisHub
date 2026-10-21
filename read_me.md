@@ -78,7 +78,8 @@ addDataHandlers() - цей метод замінюється.
 
     // Наповнює список сцен і завантажує першу сцену
     fillOptions().then(s => {
-      sceneSelect.dispatchEvent(new Event("change"));
+      if (sceneSelect.children.length)
+        sceneSelect.dispatchEvent(new Event("change"));
     });
 
     // Зберегти сцену в базі даних

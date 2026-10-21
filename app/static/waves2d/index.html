@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vawes2d</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <main class="container">
+        <h1>
+            Vawes 2d 
+            <span id="time"></span> 
+            <span id="info"> </span> 
+        </h1>
+        <div>
+        <!------------------ top panel ---------------->
+        <section>
+            <!-- <input id="sizeParams" type="text" value="W=1400; H=600; ma=200"> -->
+            <input id="spaceParams" type="text" value="size=500;  k=0.49;  loss=0.0" >
+
+            <select id="mode" aria-label="Select" required>
+                <option value="Inf" >Inf</option>
+                <option value="Sto">Sto</option>
+                <option value="Osc" selected >Osc</option>
+                <option value="Mon">Mon</option>
+                <option value="Rec">Rec</option>
+                <option value="Del">Del</option>
+            </select>     
+
+            <input id="oscilParams" type="text" value="amp=1;  q=0.25; vx=0" style="display: inline;">
+            <input id="recieverParams" type="text" value="loss=0.5" style="display: none;">
+
+            <button id="runButton" title="Run | Stop">Run</button>
+            <button id="helpButton" title="Help" class="outline">Help</button>
+        </section>
+        <section>
+            <button id="dButton" title="2d | 3d">3d</button>
+            <input id="zScale" type="range" min="1" max="1000" value="50" title="Масштаб">
+            <span id="zScaleValue">1:50</span>
+        </section>
+ 
+        <!-- ------------------canvases------------------  -->            
+        <div class="canvas-frame">
+            <canvas id="canvas2d"></canvas>
+            <canvas id="canvas3d"></canvas>
+        </div>
+
+        <!-- ------------------bottom panel------------------  -->
+    <div class="bottom-panel">
+          <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
+          <input id="sceneName" type="text" class="scene-name" title="Scene name" >
+          <select id="sceneSelect" class="scene-select" ></select>
+          <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
+    </div>
+
+    </main>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
