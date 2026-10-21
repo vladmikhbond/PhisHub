@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mech2d</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div class="container">
+      <h1>
+          Mech2d 
+          <span id="info"> </span> 
+      </h1>
+      <!------------------ top panel ---------------->
+      <section>
+          <input id="sizeParams" type="text" value="W=1024; H=700">
+          <input id="spaceParams" type="text" value="k=100; w=0; u=0; v=0; g=0.005"  style="width: 350px;" >
+
+          <select id="createMode" aria-label="Select" required>
+              <option value="Info">Info</option>
+              <option value="Ball" selected >Ball</option>
+              <option value="Line">Line</option>
+              <option value="Link">Link</option>
+          </select>     
+
+          <input id="ballParams" type="text" value="st=0" style="display: inline;" >
+          <input id="lineParams" type="text" value="" style="display: none;">
+          <input id="linkParams" type="text" value="t=0" style="display: none;">
+
+          <button id="runButton" title="Run | Stop">Run</button>
+          <button id="helpButton" title="Help" class="outline">Help</button>
+      </section>
+      
+      <section> 
+          <label> Pretty
+            <input id="prettyModeCb" type="checkbox" title="pretty mode"> 
+          </label>
+          <label> Trace
+            <input id="traceModeCb" type="checkbox" title="trace mode"> 
+          </label>           
+      </section>
+
+      <!-- ------------------canvases------------------  -->
+      <div class="canvas-frame">
+        <canvas id="canvas2" tabindex="0"></canvas>
+        <canvas id="canvas"></canvas>
+      </div>
+
+      <!-- ------------------bottom panel------------------  -->
+      <div class="bottom-panel">
+          <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
+          <input id="sceneName" type="text" class="scene-name" title="Scene name" >
+          <select id="sceneSelect" class="scene-select" ></select>
+          <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
+      </div>
+ 
+  </div>
+  <img src="./assets/redBall.png" id="redBallImg" width="523" height="520" style="display: none;" />
+  <img src="./assets/blueBall.png" id="blueBallImg" width="523" height="520" style="display: none;" />
+  <img src="./assets/greenBall.png" id="greenBallImg" width="146" height="145" style="display: none;" />
+  <img src="./assets/goldBall.png" id="goldBallImg" width="146" height="145" style="display: none;" />        
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
