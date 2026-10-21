@@ -56,7 +56,8 @@ setCurrentModelWithJson(jsonStr: string ) {
 }
 
 addDataHandlers() - цей метод замінюється.
-Перед заміною встановити унік знач константи KEY_PREFIX.
+Перед заміною встановити унік знач константи KEY_PREFIX
+і прибрати ост рядок - мепінг до ts.
 
 
 ``` javascript
