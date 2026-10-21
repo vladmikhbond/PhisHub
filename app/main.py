@@ -158,7 +158,7 @@ def logout(
     )
 
 
-#==================================================================================
+#==================================== Путі ==============================================
 
 # Отримати всі ключі сцен поточного користувача
 #
@@ -250,7 +250,7 @@ def delete_json(
     db.delete(scene)
     db.commit()
 
-
+# Для того, що головна сторінка зветься home.html, а не  index.html
 @app.get("/", include_in_schema=False)
 def homepage():
     return FileResponse(FilePath(__file__).parent / "static" / "home.html")
