@@ -173,7 +173,7 @@ addDataHandlers()
 # TODO
 
 ready - початкова ініц за рахунок лише index.html (mech2d - не уведені в дію info-параметри з html)
-відокремити бібіліотеки у wives2d
+ready - відокремити бібіліотеки у wives2d
 
 сторінка home.html
 саморегістрація
