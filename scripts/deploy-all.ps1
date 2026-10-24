@@ -1,7 +1,6 @@
 $projects = @(
-    "Waves2d",
-    "Mech2d"
-
+    "Waves2d"
+   
 )
 
 foreach ($project in $projects) {
