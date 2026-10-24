@@ -16,19 +16,17 @@
       </h1>
       <!------------------ top panel ---------------->
       <section>
-          <input id="sizeParams" type="text" value="W=1024; H=700">
-          <input id="spaceParams" type="text" value="k=100; w=0; u=0; v=0; g=0.005"  style="width: 350px;" >
-
           <select id="createMode" aria-label="Select" required>
               <option value="Info">Info</option>
               <option value="Ball" selected >Ball</option>
               <option value="Line">Line</option>
               <option value="Link">Link</option>
-          </select>     
+          </select>   
 
-          <input id="ballParams" type="text" value="st=0" style="display: inline;" >
+          <input id="infoParams" type="text" value="w: 1024, h: 700, K: 0.5, W: 0.5, Wk: 0.95, Vis: 0, g: 0.005" style="display: none;">
+          <input id="ballParams" type="text" value="st: 0, m: 1" style="display: inline;" >
           <input id="lineParams" type="text" value="" style="display: none;">
-          <input id="linkParams" type="text" value="t=0" style="display: none;">
+          <input id="linkParams" type="text" value="t: 0" style="display: none;">
 
           <button id="runButton" title="Run | Stop">Run</button>
           <button id="helpButton" title="Help" class="outline">Help</button>
@@ -50,12 +48,14 @@
       </div>
 
       <!-- ------------------bottom panel------------------  -->
-      <div class="bottom-panel">
-          <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
-          <input id="sceneName" type="text" class="scene-name" title="Scene name" >
-          <select id="sceneSelect" class="scene-select" ></select>
-          <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
-      </div>
+        <div class="bottom-panel">
+            <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
+            <input id="sceneName" type="text" class="scene-name" title="Scene name" >
+            <select id="sceneSelect" class="scene-select" ></select>
+            <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
+        </div>
+        
+        <textarea id="savedSceneText" rows="1" class="scene-textarea"> </textarea>
  
   </div>
   <img src="./assets/redBall.png" id="redBallImg" width="523" height="520" style="display: none;" />

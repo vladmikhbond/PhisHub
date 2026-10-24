@@ -27300,69 +27300,21 @@ var Bar = class {
 };
 
 // src/controller/params.ts
-function getSpaceParams() {
-  const defValue = [500, 0.99, 0];
-  const paramsElement = document.getElementById("spaceParams");
-  let ps;
+function getParams(elementId) {
+  const paramsElement = document.getElementById(elementId);
   try {
-    ps = new Function(
+    return new Function(
       "",
-      "let size, k, loss;" + paramsElement.value + "; return [size, k, loss]"
+      `return {${paramsElement.value}};`
     )();
   } catch {
-    return errMesage("Space params: grammar error", defValue, paramsElement);
+    return errMesage("Grammar error", paramsElement);
   }
-  if (ps[0] == void 0 || ps[0] < 100)
-    return errMesage("Size must by >= 100", defValue, paramsElement);
-  if (ps[1] == void 0 || ps[1] < 0 || ps[1] > 1 / 2)
-    return errMesage("K: 0 < k < 1/2", defValue, paramsElement);
-  if (ps[2] == void 0 || ps[2] < 0 || ps[2] > 1)
-    return errMesage("Loss: 0 < loss < 1", defValue, paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
 }
-function getOscilParams() {
-  const defValue = [1, 100, 0, 0];
-  const paramsElement = document.getElementById("oscilParams");
-  let ps;
-  try {
-    ps = new Function(
-      "",
-      "let amp, q, vx, la;" + paramsElement.value + "; return [amp, q, vx, la]"
-    )();
-  } catch {
-    return errMesage("Grammar error", defValue, paramsElement);
-  }
-  if (ps[0] == void 0)
-    return errMesage("Amplitude (amp) is undefined", defValue, paramsElement);
-  if (ps[1] == void 0 && ps[3] == void 0)
-    return errMesage("Wave number (q) and Wave length (la) are undefined", defValue, paramsElement);
-  if (ps[2] == void 0)
-    return errMesage("Hor velocity (vx) is undefined", defValue, paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
-}
-function getReceiverParams() {
-  const defValue = 0;
-  const paramsElement = document.getElementById("recieverParams");
-  let loss;
-  try {
-    loss = new Function(
-      "",
-      "let loss;" + paramsElement.value + "; return loss;"
-    )();
-  } catch {
-    return errMesage("Grammar error", defValue, paramsElement);
-  }
-  if (loss == void 0 || loss < 0 || loss > 1)
-    return errMesage("Loss: 0 <= loss <= 1", defValue, paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return loss;
-}
-function errMesage(mes, defValue, el) {
+function errMesage(mes, el) {
   alert(mes);
   el.style.backgroundColor = "pink";
-  return defValue;
+  return null;
 }
 
 // src/controller/utils.ts
@@ -27449,7 +27401,8 @@ var Controller = class {
   timer = 0;
   viewMode = 0 /* Two */;
   constructor() {
-    this.space = new Space(...getSpaceParams());
+    const ps = getParams("infoParams");
+    this.space = new Space(ps.size, ps.k, ps.loss);
     this.addOtherListeners();
     this.addMouseListeners(canvas2d2);
     this.addDataHandlers();
@@ -27509,6 +27462,7 @@ var Controller = class {
 
     // Наповнює список сцен і завантажує першу сцену
     fillOptions().then(s => {
+      if (sceneSelect.children.length)
         sceneSelect.dispatchEvent(new Event("change"));
     });
 
@@ -27592,7 +27546,7 @@ var Controller = class {
     }
   }
 ///////////////////////////////////////////////////////////////////////
-
+  
   //#region other listeners
   addOtherListeners() {
     document.getElementById("runButton").addEventListener("click", () => {
@@ -27623,36 +27577,39 @@ var Controller = class {
       document.getElementById("zScaleValue").innerHTML = "1:" + zScale;
     });
     document.getElementById("mode").addEventListener("change", (e) => {
-      document.getElementById("oscilParams").style.display = this.mode == 1 /* Osc */ || this.mode == 2 /* Mon */ ? "inline" : "none";
-      document.getElementById("recieverParams").style.display = this.mode == 3 /* Rec */ ? "inline" : "none";
+      let infoParams = document.getElementById("infoParams").style;
+      let oscilParams = document.getElementById("oscilParams").style;
+      let recieverParams = document.getElementById("recieverParams").style;
+      infoParams.display = oscilParams.display = recieverParams.display = "none";
+      switch (this.mode) {
+        case 0 /* Inf */:
+          infoParams.display = "inline";
+          break;
+        case (1 /* Osc */, 2 /* Mon */):
+          oscilParams.display = "inline";
+          break;
+        case 3 /* Rec */:
+          recieverParams.display = "inline";
+          break;
+      }
     });
-    document.getElementById("spaceParams").addEventListener("keydown", (e) => {
+    document.getElementById("infoParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
         document.getElementById("zScale").focus();
         this.stop();
-        const [size, k, loss] = getSpaceParams();
-        if (this.space.size != size) {
-          this.space = new Space(size, k, loss);
+        const ps = getParams("infoParams");
+        if (this.space.size != ps.size) {
+          this.space = new Space(ps.size, ps.k, ps.loss);
           this.initCanvases();
           return;
         }
-        if (this.space.k != k || this.space.loss != loss) {
-          this.space.k = k;
-          this.space.loss = loss;
+        if (this.space.k != ps.k || this.space.loss != ps.loss) {
+          this.space.k = ps.k;
+          this.space.loss = ps.loss;
         } else {
           this.space.calm();
         }
         show(this.space);
-      }
-    });
-    document.getElementById("oscilParams").addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
-        getOscilParams();
-      }
-    });
-    document.getElementById("recieverParams").addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
-        getReceiverParams();
       }
     });
     document.addEventListener("keydown", (e) => {
@@ -27732,8 +27689,8 @@ var Controller = class {
           this.addBars(r0, c0, r1, c1);
           break;
         case 3 /* Rec */:
-          const loss = getReceiverParams();
-          this.addReceivers(r0, c0, r1, c1, loss);
+          const ps = getParams("receiverParams");
+          this.addReceivers(r0, c0, r1, c1, ps.loss);
           break;
         case 5 /* Del */:
           this.space.DeleteInRect(r0, c0, r1, c1);
@@ -27746,9 +27703,9 @@ var Controller = class {
     });
   }
   addOscillators(r0, c0, r1, c1) {
-    let [amp, q, vx, lambda] = getOscilParams();
+    const ps = getParams("oscilParams");
     if (c0 == c1 && r0 == r1) {
-      let osc = this.mode == 1 /* Osc */ ? new Oscillator(r0, c0, amp, q, lambda, vx, this.space) : new Mono(r0, c0, amp, q, lambda, this.space);
+      let osc = this.mode == 1 /* Osc */ ? new Oscillator(r0, c0, ps.amp, ps.q, ps.lambda, ps.vx, this.space) : new Mono(r0, c0, ps.amp, ps.q, ps.lambda, this.space);
       this.space.addOscillator(osc);
       return;
     }
@@ -27757,7 +27714,7 @@ var Controller = class {
         [r0, r1, c0, c1] = [r1, r0, c1, c0];
       for (let r = r0; r <= r1; r += 2) {
         let c = (r - r0) * (c1 - c0) / (r1 - r0) + c0 | 0;
-        let osc = this.mode == 1 /* Osc */ ? new Oscillator(r, c, amp / 2, q, lambda, vx, this.space) : new Mono(r, c, amp / 2, q, lambda, this.space);
+        let osc = this.mode == 1 /* Osc */ ? new Oscillator(r, c, ps.amp / 2, ps.q, ps.lambda, ps.vx, this.space) : new Mono(r, c, ps.amp / 2, ps.q, ps.lambda, this.space);
         this.space.addOscillator(osc);
       }
     } else {
@@ -27765,7 +27722,7 @@ var Controller = class {
         [r0, r1, c0, c1] = [r1, r0, c1, c0];
       for (let c = c0; c <= c1; c += 2) {
         let r = (c - c0) * (r1 - r0) / (c1 - c0) + r0 | 0;
-        let osc = this.mode == 1 /* Osc */ ? new Oscillator(r, c, amp / 2, q, lambda, vx, this.space) : new Mono(r, c, amp / 2, q, lambda, this.space);
+        let osc = this.mode == 1 /* Osc */ ? new Oscillator(r, c, ps.amp / 2, ps.q, ps.lambda, ps.vx, this.space) : new Mono(r, c, ps.amp / 2, ps.q, ps.lambda, this.space);
         this.space.addOscillator(osc);
       }
     }
@@ -27799,4 +27756,14 @@ var Controller = class {
 
 // src/main.ts
 new Controller();
+/*! Bundled license information:
 
+three/build/three.core.js:
+three/build/three.module.js:
+  (**
+   * @license
+   * Copyright 2010-2026 Three.js Authors
+   * SPDX-License-Identifier: MIT
+   *)
+*/
+//# sourceMappingURL=main.js.map

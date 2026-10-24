@@ -4,7 +4,7 @@
 
 Головна сторінка додатку - index.html.
 
-На сторінці index.html повино бути посилиння на main.js і є 4 елемента
+На сторінці index.html повино бути посилиння на main.js і повинно бути 4 елемента:
 
 ```sh
           <button id="saveSceneButton" class="scene-btn" title="Save script">✔</button>
@@ -55,9 +55,13 @@ setCurrentModelWithJson(jsonStr: string ) {
 
 }
 
-addDataHandlers() - цей метод замінюється.
+addDataHandlers() 
+
+
+метод addDataHandlers() замінюється на наведений нижче.
+
 Перед заміною встановити унік знач константи KEY_PREFIX
-і прибрати ост рядок - мепінг до ts.
+і в файлі main.js прибрати останній рядок - мепінг до ts.
 
 
 ``` javascript

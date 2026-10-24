@@ -388,50 +388,29 @@ var Handler = class {
 };
 
 // src/controller/params.ts
-var infoParams = document.getElementById("infoParams");
-var chargeParams = document.getElementById("chargeParams");
-var wireParams = document.getElementById("wireParams");
-function getInfoParams() {
+function getParams(elementId) {
+  const paramsElement = document.getElementById(elementId);
   try {
     return new Function(
       "",
-      `return {${infoParams.value}};`
+      `return {${paramsElement.value}};`
     )();
   } catch {
-    return errMesage("Grammar error", infoParams);
+    return errMesage("Grammar error", paramsElement);
   }
-}
-function getChargeParams() {
-  try {
-    return new Function(
-      "",
-      `return {${chargeParams.value}};`
-    )();
-  } catch {
-    return errMesage("Grammar error", chargeParams);
-  }
-}
-function setChargeParams(ch) {
-  const line = `q: ${ch.q}, vx: ${ch.v[0].toFixed(1)}, vy: ${ch.v[1].toFixed(1)}, m: ${ch.m}, fixed: ${ch.fixed ? 1 : 0}`;
-  chargeParams.value = line;
-}
-function getWireParams() {
-  try {
-    return new Function(
-      "",
-      `return {${wireParams.value}};`
-    )();
-  } catch {
-    return errMesage("Grammar error", wireParams);
-  }
-}
-function setWireParams(wire) {
-  wireParams.value = `x: ${wire.x}, j: ${wire.j}`;
 }
 function errMesage(mes, el) {
   alert(mes);
   el.style.backgroundColor = "pink";
   return null;
+}
+var chargeParams = document.getElementById("chargeParams");
+var wireParams = document.getElementById("wireParams");
+function setChargeParams(ch) {
+  chargeParams.value = `q: ${ch.q}, vx: ${ch.v[0].toFixed(1)}, vy: ${ch.v[1].toFixed(1)}, m: ${ch.m}, fixed: ${ch.fixed ? 1 : 0}`;
+}
+function setWireParams(wire) {
+  wireParams.value = `x: ${wire.x}, j: ${wire.j}`;
 }
 
 // src/models/Charge.ts
@@ -535,7 +514,7 @@ var ChargeHandler = class extends Handler {
         setChargeParams(this.space.selectedCharge);
       }
     } else {
-      let params = getChargeParams();
+      let params = getParams("chargeParams");
       if (params) {
         let vx = (x2 - x1) / 10;
         let vy = (y2 - y1) / 10;
@@ -740,7 +719,7 @@ var WireHandler = class extends Handler {
         setWireParams(this.space.selectedWire);
       }
     } else {
-      let params = getWireParams();
+      let params = getParams("wireParams");
       const newWire = new Wire(x2, params.j);
       this.space.wires.push(newWire);
       this.space.selectedWire = newWire;
@@ -847,16 +826,16 @@ var Controller = class {
   //#region CreateMode property
   _creationMode = 0 /* Info */;
   set creationMode(mode) {
-    let infoParams2 = document.getElementById("infoParams").style;
+    let infoParams = document.getElementById("infoParams").style;
     let chargeParams2 = document.getElementById("chargeParams").style;
     let wireParams2 = document.getElementById("wireParams").style;
     let magnetParams = document.getElementById("magnetParams").style;
-    infoParams2.display = chargeParams2.display = wireParams2.display = magnetParams.display = "none";
+    infoParams.display = chargeParams2.display = wireParams2.display = magnetParams.display = "none";
     this._creationMode = mode;
     switch (mode) {
       case 0 /* Info */:
         this.switchHandlers(this.infoHandler);
-        infoParams2.display = "inline";
+        infoParams.display = "inline";
         break;
       case 1 /* Charge */:
         this.switchHandlers(this.chargeHandler);
@@ -881,9 +860,9 @@ var Controller = class {
   addEventHandlers() {
     document.getElementById("infoParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
-        const params = getInfoParams();
-        doc.canvas.width = params.W;
-        doc.canvas.height = params.H;
+        const params = getParams("infoParams");
+        doc.canvas.width = params.w;
+        doc.canvas.height = params.h;
         this.space.steadyMagnetic = params.sm;
         glo.isE = params.Ke > 0;
         glo.isB = params.Kb > 0;
@@ -895,7 +874,7 @@ var Controller = class {
     });
     document.getElementById("chargeParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
-        const params = getChargeParams();
+        const params = getParams("chargeParams");
         const selCharge = this.space.selectedCharge;
         if (params && selCharge) {
           selCharge.v = vec2_exports.fromValues(params.vx, params.vy);
@@ -908,7 +887,7 @@ var Controller = class {
     });
     document.getElementById("wireParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
-        const params = getWireParams();
+        const params = getParams("wireParams");
         const selWire = this.space.selectedWire;
         if (params && selWire) {
           selWire.x = params.x;
@@ -969,6 +948,7 @@ var Controller = class {
       this.stop();
     }
   }
+///////////////////////////////////////////////////////////////////////
   addDataHandlers() 
   {
     const KEY_PREFIX = "maxwell.";
@@ -986,7 +966,8 @@ var Controller = class {
 
     // Наповнює список сцен і завантажує першу сцену
     fillOptions().then(s => {
-      sceneSelect.dispatchEvent(new Event("change"));
+      if (sceneSelect.children.length)
+        sceneSelect.dispatchEvent(new Event("change"));
     });
 
     // Зберегти сцену в базі даних
@@ -1068,6 +1049,7 @@ var Controller = class {
       }        
     }
   }
+///////////////////////////////////////////////////////////////////////
 
   //#region step-stop-run
   timestamp = Date.now();
@@ -1290,4 +1272,3 @@ var space = new Space();
 var view = new View(space);
 new Controller(space, view);
 view.draw();
-//# sourceMappingURL=main.js.map

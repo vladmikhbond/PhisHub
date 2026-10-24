@@ -19,7 +19,7 @@
     </h1>
     <!------------------ top panel ---------------->
     <section>
-        <input id="sizeParams" type="text" value="W=600; H=550">
+        <input id="sizeParams" type="text" value="w: 600, h: 550">
 
         <button id="clearButton" class="command">C</button>
         <button id="execButton" class="command">Exec</button>
@@ -27,14 +27,15 @@
         <button id="helpButton" class="command" onclick="window.open('help.html', '_blank');">Help</button>
     </section>
     <section>
-        <label>
-            Vis <span id="visPercentage">10%</span>
-            <input id="visRange" type="range" min="0", max="6" value="2" title="visibility percentage">
-        </label>
         <label>          
             Pretty
             <input id="prettyBox" type="checkbox" > 
         </label>
+        <label>
+            Vis <span id="visPercentage">10%</span>
+            <input id="visRange" type="range" min="0", max="6" value="2" title="visibility percentage">
+        </label>
+
         <label>
             Speed 
             <input id="speedRange" type="range" min="0", max="2" value="2" title="Speed of time">

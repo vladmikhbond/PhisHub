@@ -19,9 +19,6 @@
     </h1>
     <!------------------ top panel ---------------->
     <section>
-        <input id="sizeParams" type="text" value="W=800; H=600" >
-        <input id="spaceParams" type="text" value="g=0.1; gBall=0" >
-
         <select id="createMode" aria-label="Select" required>
             <option value="Info">Info</option>
             <option value="Gas" selected >Gas</option>
@@ -29,9 +26,10 @@
             <option value="Devs">Devs</option>
         </select>
         
-        <input id="gasParams" type="text"  value="n=1000; r=1; t=20; m=1" style="width: 250px;" >
-        <input id="wallParams" type="text" value="type='r'" title="type='r[ectangle]'|'p[lunger]'"  style="width: 250px;" >
-        <input id="devsParams" type="text" value="type='m'; c='red'; r=1.001 " title="type='m[eter]'|'h[eater]'"  style="width: 250px;">
+        <input id="infoParams" type="text"  value="w: 1000, h: 600, g: 0.1, gBall: 0 " style="display: none;">
+        <input id="gasParams" type="text"  value="n: 1000, r: 1, t: 20, m: 1" style="display: inline;">
+        <input id="wallParams" type="text" value="type: 'r'" title="type='r[ectangle]'|'p[lunger]'" style="display: none;">
+        <input id="devsParams" type="text" value="type: 'm', c: 'red', r: 1.001" title="type='m[eter]'|'h[eater]'" style="display: none;">
 
         <button id="runButton" title="Run | Stop">Run</button>
         <button id="helpButton" class="command" onclick="window.open('help.html');">Help</button>
@@ -53,11 +51,9 @@
           <input id="sceneName" type="text" class="scene-name" title="Scene name" >
           <select id="sceneSelect" class="scene-select" ></select>
           <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
-
-        
     </div>
-        <textarea id="savedSceneText" rows="1" class="scene-textarea">
-        </textarea>
+    
+    <textarea id="savedSceneText" rows="1" class="scene-textarea"> </textarea>
     <script type="module" src="main.js"></script>
 
 </main>

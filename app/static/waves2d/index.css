@@ -1,13 +1,12 @@
 :root {
     --canvas-width: 800px;
     --canvas-height: 600px;
-    --element-height: 50px;
+    --element-height: 44px;
 }
 
 /* <!------------------ top panel ----------------> */
 
 input[type="text"],
-input[type="range"],
 select,
 button {
     vertical-align: top;
@@ -15,10 +14,17 @@ button {
     margin-bottom: 0;
     height: var(--element-height);
 }
-select,
+
 button {
     background-color: rgb(42, 111, 113);
     padding-top: 8px;
+}
+
+select {
+    background-color: rgb(42, 111, 113);
+    padding: 4px;
+    width: 140px;
+    color: white;
 }
 
 input[type="checkbox"] {
@@ -26,13 +32,13 @@ input[type="checkbox"] {
 }
 
 input[type="text"] {
-    width: 250px;
-    padding: 8px;
+    width: calc(var(--canvas-width) - 325px);
+    padding: 10px;
+    text-align: center;
 }
 
-select {
-    width: 120px;
-    color: white;
+input[type="range"] {
+    width: calc((var(--canvas-width) - 220px) / 2);
 }
 
 input[type="range"] {

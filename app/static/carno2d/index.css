@@ -26,12 +26,13 @@ input[type="checkbox"] {
 }
 
 input[type="text"] {
-    width: 200px;
-    padding: 6px;
+    width: calc(var(--canvas-width) - 320px);
+    padding: 10px;
+    text-align: center;
 }
 
 input[type="range"] {
-    width: 120px;
+     width: calc((var(--canvas-width) - 310px) / 2);
 }
 
 label {

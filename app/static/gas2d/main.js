@@ -744,7 +744,7 @@ var Space = class {
   selectedBall = null;
   selectedDevice = null;
   bombs = [];
-  constructor(width, height) {
+  constructor(height, width) {
     this.width = width;
     this.height = height;
     this.resetContainers();
@@ -1364,104 +1364,16 @@ var Handler = class {
 };
 
 // src/controller/params.ts
-function getSizeParams() {
-  const paramsElement = document.getElementById("sizeParams");
-  let ps;
+function getParams(elementId) {
+  const paramsElement = document.getElementById(elementId);
   try {
-    ps = new Function(
+    return new Function(
       "",
-      "let W, H;" + paramsElement.value + "; return [W, H]"
+      `return {${paramsElement.value}};`
     )();
   } catch {
     return errMesage("Grammar error", paramsElement);
   }
-  if (ps[0] == void 0 || ps[0] <= 0)
-    return errMesage("W: W > 0", paramsElement);
-  if (ps[1] == void 0 || ps[1] <= 0)
-    return errMesage("H: H > 0", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
-}
-function getSpaceParams() {
-  const paramsElement = document.getElementById("spaceParams");
-  let ps;
-  try {
-    ps = new Function(
-      "",
-      "let g, gBall;" + paramsElement.value + "; return [g, gBall]"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  const [g, gBall] = ps;
-  if (g == void 0 || g < -10 || g > 10)
-    return errMesage("g: -10 < k < 10", paramsElement);
-  if (!(gBall != void 0 && (gBall == 0 || gBall == 1)))
-    return errMesage("w: 0 <= w < 1", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
-}
-function getGasParams() {
-  const paramsElement = document.getElementById("gasParams");
-  let ps;
-  try {
-    ps = new Function(
-      "",
-      "let n, r, t, m, c;" + paramsElement.value + "; return [n, r, t, m, c]"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  let [n, r, t, m, c] = ps;
-  if (n == void 0 || n < 0)
-    n = 1e3;
-  if (r == void 0 || r < 0)
-    r = 1;
-  if (t == void 0 || t < 0)
-    t = 20;
-  if (m == void 0 || m < 0)
-    m = 1;
-  if (c == void 0)
-    c = "red";
-  paramsElement.style.backgroundColor = "";
-  return [n, r, t, m, c];
-}
-function getWallParams() {
-  const paramsElement = document.getElementById("wallParams");
-  let type_;
-  try {
-    type_ = new Function(
-      "",
-      "let type;" + paramsElement.value + "; return type"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  if (!type_ || type_ != "r" && type_ != "p")
-    type_ = "r";
-  paramsElement.style.backgroundColor = "";
-  return type_;
-}
-function getDevsParams() {
-  const paramsElement = document.getElementById("devsParams");
-  let ps;
-  try {
-    ps = new Function(
-      "",
-      "let type, r, c;" + paramsElement.value + "; return [type, r, c]"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  let [type_, r, c] = ps;
-  if (type_ == void 0 || type_ != "m" && type_ != "h")
-    type_ = "m";
-  if (r == void 0 || r < 0.9 || r > 1.1)
-    r = 1.001;
-  if (c == void 0)
-    c = "red";
-  paramsElement.style.backgroundColor = "";
-  return [type_, r, c];
 }
 function errMesage(mes, el) {
   alert(mes);
@@ -1503,10 +1415,9 @@ var BallHandler = class extends Handler {
     if (drawDist <= CLICK_DIST) {
       this.selectObject(x1, y1);
     } else {
-      let ps = getGasParams();
+      let ps = getParams("gasParams");
       if (ps) {
-        const [n, r, t, m, c] = ps;
-        this.space.addBomb(new Bomb(n, x1, y1, x2, y2, 0, 0, t, r, m, c));
+        this.space.addBomb(new Bomb(ps.n, x1, y1, x2, y2, 0, 0, ps.t, ps.r, ps.m, "red"));
       }
     }
     this.view.draw();
@@ -1552,9 +1463,6 @@ var BallHandler = class extends Handler {
 
 // src/controller/LineHandler.ts
 var LineHandler = class extends Handler {
-  // constructor(controller: Controller) {
-  //    super(controller);
-  // }
   mousedown(e) {
     super.mousedown(e);
     let sel = this.space.selectedLine;
@@ -1577,14 +1485,14 @@ var LineHandler = class extends Handler {
     if (x2 - x1 < glo.quant && y2 - y1 < glo.quant) {
       this.selectObject(x1, y1);
     } else {
-      const t = getWallParams();
+      const ps = getParams("wallParams");
       if (Math.abs(y1 - y2) < glo.quant) {
         this.space.addLine(new Line(x1, y1, x2, y1, "blue"));
       } else if (Math.abs(x1 - x2) < glo.quant) {
         this.space.addLine(new Line(x1, y1, x1, y2, "blue"));
-      } else if (t == "r") {
+      } else if (ps.type == "r") {
         this.space.addRect(x1, y1, x2, y2, "blue");
-      } else if (t == "p") {
+      } else if (ps.type == "p") {
         this.space.addPlunger(x1, y1, x2, y2, "blue");
       }
     }
@@ -1642,9 +1550,6 @@ var LineHandler = class extends Handler {
 
 // src/controller/DeviceHandler.ts
 var DeviceHandler = class extends Handler {
-  // constructor(controller: Controller) {
-  //     super(controller);
-  // }
   mousedown(e) {
     super.mousedown(e);
     let dev = this.space.selectedDevice;
@@ -1667,11 +1572,11 @@ var DeviceHandler = class extends Handler {
     if (x2 - x1 < glo.quant && y2 - y1 < glo.quant) {
       this.selectObject(x1, y1);
     } else {
-      let [t, rate, color] = getDevsParams();
-      if (t == "m") {
-        this.space.addDevice(new Measurer(x1, y1, x2, y2, color));
-      } else if (t == "h") {
-        this.space.addDevice(new Heater(x1, y1, x2, y2, rate, color));
+      const ps = getParams("devsParams");
+      if (ps.type == "m") {
+        this.space.addDevice(new Measurer(x1, y1, x2, y2, ps.c));
+      } else if (ps.type == "h") {
+        this.space.addDevice(new Heater(x1, y1, x2, y2, ps.r, ps.c));
       }
     }
     this.view.draw();
@@ -1787,15 +1692,23 @@ var Controller = class {
     this.addDataHandlers();
     this.setModelSize();
     this.createMode = 1 /* Gas */;
+    document.getElementById("infoParams").dispatchEvent(new KeyboardEvent("keydown", {
+      key: "Enter",
+      code: "Enter",
+      bubbles: true,
+      cancelable: true
+    }));
   }
   set createMode(mode) {
+    let inf = document.getElementById("infoParams").style;
     let gas = document.getElementById("gasParams").style;
     let wal = document.getElementById("wallParams").style;
     let dev = document.getElementById("devsParams").style;
-    gas.display = wal.display = dev.display = "none";
+    inf.display = gas.display = wal.display = dev.display = "none";
     this._createMode = mode;
     switch (mode) {
       case 0 /* Info */:
+        inf.display = "inline";
         break;
       case 1 /* Gas */:
         this.switchHandlers(this.ballHandler);
@@ -1824,21 +1737,14 @@ var Controller = class {
     doc.canvas2.width = w;
   }
   addHandlers() {
-    document.getElementById("sizeParams").addEventListener("keydown", (e) => {
+    document.getElementById("infoParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
-        const size = getSizeParams();
-        if (size) {
-          [this.space.width, this.space.height] = size;
-          this.setModelSize();
-        }
-      }
-    });
-    document.getElementById("spaceParams").addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
-        const ps = getSpaceParams();
-        if (ps) {
-          [glo.g, glo.gBall] = ps;
-        }
+        const ps = getParams("infoParams");
+        this.space.width = ps.w;
+        this.space.height = ps.h;
+        glo.g = ps.g;
+        glo.gBall = ps.gBall;
+        this.setModelSize();
       }
     });
     document.getElementById("createMode").addEventListener("change", (e) => {
@@ -1875,7 +1781,7 @@ var Controller = class {
     this.view.draw();
   }
 
-///////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////
   addDataHandlers() 
   {
     const KEY_PREFIX = "gas2d.";
@@ -1893,7 +1799,8 @@ var Controller = class {
 
     // Наповнює список сцен і завантажує першу сцену
     fillOptions().then(s => {
-      sceneSelect.dispatchEvent(new Event("change"));
+      if (sceneSelect.children.length)
+        sceneSelect.dispatchEvent(new Event("change"));
     });
 
     // Зберегти сцену в базі даних
@@ -1976,8 +1883,6 @@ var Controller = class {
     }
   }
 ///////////////////////////////////////////////////////////////////////
-  
-
 
 
   switchHandlers(handler) {
@@ -2014,9 +1919,7 @@ var Controller = class {
 };
 
 // src/main.ts
-[glo.g, glo.gBall] = getSpaceParams();
-var space = new Space(...getSizeParams());
+var space = new Space(600, 800);
 var view = new View(space);
 new Controller(space, view);
 view.draw();
-//# sourceMappingURL=main.js.map

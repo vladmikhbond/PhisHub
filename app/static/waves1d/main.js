@@ -52,9 +52,9 @@ var Receiver = class {
   loss = 0;
   space;
   energy = 0;
-  constructor(i, loss2, space2) {
+  constructor(i, loss, space2) {
     this.i = i;
-    this.loss = loss2;
+    this.loss = loss;
     this.space = space2;
   }
   step() {
@@ -83,15 +83,15 @@ var Space = class {
   oscillators = [];
   receivers = [];
   selNodeIdx = -1;
-  constructor(w2, margin2, k2, loss2) {
-    this.size = w2 - 2 * margin2;
-    this.margin = margin2;
+  constructor(w, margin, k, loss) {
+    this.size = w - 2 * margin;
+    this.margin = margin;
     this.nodes = new Array(this.n);
     for (let i = 0; i < this.n; i++) {
       this.nodes[i] = new Node();
     }
-    this.k = k2;
-    this.loss = loss2;
+    this.k = k;
+    this.loss = loss;
     this.setAbsorbers();
   }
   get n() {
@@ -136,9 +136,9 @@ var Space = class {
     for (let i = 0; i < this.margin; i++) {
       let xLeft = this.margin - i;
       let xRight = this.size + this.margin + i;
-      let loss2 = (i / this.margin) ** 2;
-      this.nodes[xLeft].loss = loss2;
-      this.nodes[xRight].loss = loss2;
+      let loss = (i / this.margin) ** 2;
+      this.nodes[xLeft].loss = loss;
+      this.nodes[xRight].loss = loss;
     }
   }
   addOscillator(o) {
@@ -343,79 +343,16 @@ var View = class {
 };
 
 // src/conroller/params.ts
-function getSizeParams() {
-  const paramsElement = document.getElementById("sizeParams");
-  let ps2;
+function getParams(elementId) {
+  const paramsElement = document.getElementById(elementId);
   try {
-    ps2 = new Function(
+    return new Function(
       "",
-      "let W, H, ma;" + paramsElement.value + "; return [W, H, ma]"
+      `return {${paramsElement.value}};`
     )();
   } catch {
     return errMesage("Grammar error", paramsElement);
   }
-  if (ps2[0] == void 0 || ps2[0] < 100 || ps2[0] > 1e4)
-    return errMesage("W: (100 <= W <= 10000)", paramsElement);
-  if (ps2[1] == void 0 || ps2[1] < 100 || ps2[1] > 1e4)
-    return errMesage("H: (100 <= H <= 10000)", paramsElement);
-  if (ps2[2] == void 0 || ps2[2] < 0 || ps2[2] > ps2[0] / 2)
-    return errMesage("Margin: 0 < ma < W/2", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps2;
-}
-function getSpaceParams() {
-  const paramsElement = document.getElementById("spaceParams");
-  let ps2;
-  try {
-    ps2 = new Function(
-      "",
-      "let k, loss;" + paramsElement.value + "; return [k,  loss]"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  if (ps2[0] == void 0 || ps2[0] < 0 || ps2[0] > 1)
-    return errMesage("K: 0 < k < 1", paramsElement);
-  if (ps2[1] == void 0 || ps2[1] < 0 || ps2[1] > 1)
-    return errMesage("Loss: 0 < loss < 1", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps2;
-}
-function getOscilParams() {
-  const paramsElement = document.getElementById("oscilParams");
-  let ps2;
-  try {
-    ps2 = new Function(
-      "",
-      "let amp, q, vx, la;" + paramsElement.value + "; return [amp, q, vx, la]"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  if (ps2[0] == void 0)
-    return errMesage("Amplitude (amp) is undefined", paramsElement);
-  if (ps2[1] == void 0 && ps2[3] == void 0)
-    return errMesage("Wave number (q) and Wave length (la) are undefined", paramsElement);
-  if (ps2[2] == void 0)
-    return errMesage("Hor velocity (vx) is undefined", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps2;
-}
-function getReceiverParams() {
-  const paramsElement = document.getElementById("recieverParams");
-  let ps2;
-  try {
-    ps2 = new Function(
-      "",
-      "let loss;" + paramsElement.value + "; return [loss];"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  if (ps2[0] == void 0 || ps2[0] < 0 || ps2[0] > 1)
-    return errMesage("Loss: 0 <= loss <= 1", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps2;
 }
 function errMesage(mes, el) {
   alert(mes);
@@ -531,8 +468,8 @@ function restoreSceneFromJson(json, space2) {
         continue;
       }
       const i = Number(recData.i) || 0;
-      const loss2 = Number(recData.loss) || 0;
-      const receiver = new Receiver(i, loss2, space2);
+      const loss = Number(recData.loss) || 0;
+      const receiver = new Receiver(i, loss, space2);
       receiver.energy = Number(recData.energy) || 0;
       space2.addReceiver(receiver);
     }
@@ -548,22 +485,22 @@ var Controller = class {
   constructor(space2, view2, height) {
     this.space = space2;
     this.view = view2;
-    this.addListeners();
+    this.addHandlers();
     this.addDataHandlers();
     this.initCanvases(space2.n, height);
   }
-  initCanvases(w2, h2) {
-    document.documentElement.style.setProperty("--canvas-width", w2 + "px");
-    document.documentElement.style.setProperty("--canvas-height", h2 + "px");
+  initCanvases(w, h) {
+    document.documentElement.style.setProperty("--canvas-width", w + "px");
+    document.documentElement.style.setProperty("--canvas-height", h + "px");
     const canvas = document.getElementById("canvas");
     const canvasBG = document.getElementById("canvasBG");
-    canvas.width = w2;
-    canvas.height = h2;
-    canvasBG.width = w2;
-    canvasBG.height = h2;
+    canvas.width = w;
+    canvas.height = h;
+    canvasBG.width = w;
+    canvasBG.height = h;
     this.view.backgroundPrepare();
   }
-  addListeners() {
+  addHandlers() {
     document.getElementById("runButton").addEventListener("click", () => {
       if (timer)
         this.stop();
@@ -577,68 +514,45 @@ var Controller = class {
         this.view.showSelObject();
       }
     });
-    document.getElementById("sizeParams").addEventListener("keydown", (e) => {
+    document.getElementById("infoParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
         this.stop();
-        const ps2 = getSizeParams();
-        if (ps2 == null)
-          return;
-        let [w2, h2, margin2] = ps2;
-        this.view.space = this.space = new Space(w2, margin2, this.space.k, this.space.loss);
-        this.initCanvases(w2, h2);
-        this.view.show();
-      }
-    });
-    document.getElementById("spaceParams").addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
-        this.stop();
-        const ps2 = getSpaceParams();
-        if (ps2 == null)
-          return;
-        let [k2, loss2] = ps2;
-        if (this.space.k != k2 || this.space.loss != loss2) {
-          this.space.k = k2;
-          this.space.loss = loss2;
+        const ps2 = getParams("infoParams");
+        if (this.view.canvas.width != ps2.w || this.view.canvas.height != ps2.h) {
+          this.view.space = this.space = new Space(ps2.w, ps2.ma, this.space.k, this.space.loss);
+          this.initCanvases(ps2.w, ps2.h);
+        }
+        if (this.space.k != ps2.k || this.space.loss != ps2.loss) {
+          this.space.k = ps2.k;
+          this.space.loss = ps2.loss;
         } else {
           this.space.calm();
         }
         this.view.show();
       }
     });
-    document.getElementById("oscilParams").addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
-        getOscilParams();
-      }
-    });
-    document.getElementById("recieverParams").addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
-        getReceiverParams();
-      }
-    });
     document.getElementById("canvas").addEventListener("mousedown", (e) => {
       const x = e.offsetX;
-      const [ampl, q, vx, lambda] = getOscilParams();
       if (e.button == 2) {
         this.space.deleteAt(x);
         this.view.show();
         return;
       }
+      const ps2 = getParams("oscilParams");
       switch (this.mode) {
         case 0 /* Inf */:
           this.space.selNodeIdx = x;
           this.view.showSelObject();
           break;
         case 1 /* Osc */:
-          this.space.addOscillator(new Oscillator(ampl, q, lambda, vx, x, this.space));
+          this.space.addOscillator(new Oscillator(ps2.amp, ps2.q, ps2.la, ps2.vx, x, this.space));
           break;
         case 2 /* Mon */:
-          this.space.addOscillator(new Mono(ampl, q, lambda, x, this.space));
+          this.space.addOscillator(new Mono(ps2.amp, ps2.q, ps2.la, x, this.space));
           break;
         case 3 /* Rec */:
-          const ps2 = getReceiverParams();
-          if (ps2) {
-            this.space.addReceiver(new Receiver(x, ps2[0], this.space));
-          }
+          const ps1 = getParams("recieverParams");
+          this.space.addReceiver(new Receiver(x, ps1.loss, this.space));
           break;
         case 4 /* Sto */:
           this.space.nodes[x].is_stone = true;
@@ -658,8 +572,21 @@ var Controller = class {
       this.view.show();
     });
     document.getElementById("mode").addEventListener("change", (e) => {
-      document.getElementById("oscilParams").style.display = this.mode == 1 /* Osc */ || this.mode == 2 /* Mon */ ? "inline" : "none";
-      document.getElementById("recieverParams").style.display = this.mode == 3 /* Rec */ ? "inline" : "none";
+      let infoParams = document.getElementById("infoParams").style;
+      let oscilParams = document.getElementById("oscilParams").style;
+      let recieverParams = document.getElementById("recieverParams").style;
+      infoParams.display = oscilParams.display = recieverParams.display = "none";
+      switch (this.mode) {
+        case 0 /* Inf */:
+          infoParams.display = "inline";
+          break;
+        case (1 /* Osc */, 2 /* Mon */):
+          oscilParams.display = "inline";
+          break;
+        case 3 /* Rec */:
+          recieverParams.display = "inline";
+          break;
+      }
     });
     document.getElementById("helpButton").addEventListener("click", () => {
       window.open("help.html", "_blank")?.focus();
@@ -676,7 +603,7 @@ var Controller = class {
     this.space.time = 0;
     this.view.show();
   }
-  
+
 ///////////////////////////////////////////////////////////////////////
   addDataHandlers() 
   {
@@ -695,6 +622,7 @@ var Controller = class {
 
     // Наповнює список сцен і завантажує першу сцену
     fillOptions().then(s => {
+      if (sceneSelect.children.length)
         sceneSelect.dispatchEvent(new Event("change"));
     });
 
@@ -778,9 +706,7 @@ var Controller = class {
     }
   }
 ///////////////////////////////////////////////////////////////////////
-
-
-
+  
   // ---------------- Props -------------------
   get mode() {
     switch (modeElement.value) {
@@ -821,11 +747,8 @@ var Controller = class {
 };
 
 // src/main.ts
-var ps = getSizeParams();
-var [w, h, margin] = ps;
-var [k, loss] = getSpaceParams();
-var space = new Space(w, margin, k, loss);
+var ps = getParams("infoParams");
+var space = new Space(ps.w, ps.ma, ps.k, ps.loss);
 var view = new View(space);
-new Controller(space, view, h);
+new Controller(space, view, ps.h);
 view.show();
-

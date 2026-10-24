@@ -31,7 +31,6 @@ input[type="checkbox"] {
 }
 
 input[type="text"] {
-    /* width: 360px; */
     width: calc(var(--canvas-width) - 225px);
     padding: 10px;
     text-align: center;
@@ -83,6 +82,7 @@ section {
 /* <!------------------ bottom panel ----------------> */
 .bottom-panel {
    margin-top: 8px;
+
 } 
 
 .scene-select {

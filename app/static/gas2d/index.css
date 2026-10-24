@@ -2,7 +2,7 @@
 :root {
     --canvas-width: 800px;
     --canvas-height: 600px;
-    --element-height: 50px;
+    --element-height: 44px;
 }
 
 /* <!------------------ top panel ----------------> */
@@ -15,10 +15,16 @@ button {
     height: var(--element-height);
 }
 
-select,
 button {
     background-color: rgb(42, 111, 113);
     padding-top: 8px;
+}
+
+select {
+    background-color: rgb(42, 111, 113);
+    padding: 4px;
+    width: 140px;
+    color: white;
 }
 
 input[type="checkbox"] {
@@ -26,13 +32,9 @@ input[type="checkbox"] {
 }
 
 input[type="text"] {
-    width: 200px;
-    padding: 6px;
-}
-
-select {
-    width: 120px;
-    color: white;
+    width: calc(var(--canvas-width) - 325px);
+    padding: 10px;
+    text-align: center;
 }
 
 #helpButton {
@@ -102,3 +104,7 @@ section {
     width: 70px;
 }
 
+
+.scene-textarea {
+    width: calc(var(--canvas-width));
+}

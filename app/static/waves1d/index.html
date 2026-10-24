@@ -16,10 +16,6 @@
         </h1>
         <!------------------ top panel ---------------->
         <section>
-
-            <input id="sizeParams" type="text" value="W=1400; H=600; ma=200">
-            <input id="spaceParams" type="text" value="k=0.99; loss=0.0" >
-            
             <select id="mode" aria-label="Select" required>
                 <option value="Inf" >Inf</option>
                 <option value="Sto">Sto</option>
@@ -29,8 +25,9 @@
                 <option value="Del">Del</option>
             </select>
 
-            <input id="oscilParams" type="text" value="amp=1; la=100; vx=0" style="display: inline;">
-            <input id="recieverParams" type="text" value="loss=0.5" style="display: none;">
+            <input id="infoParams" type="text" value="w: 1400, h: 600, ma: 200, k: 0.99, loss: 0.0" style="display: none;">
+            <input id="oscilParams" type="text" value="amp: 1, la: 100, vx: 0" style="display: inline;">
+            <input id="recieverParams" type="text" value="loss: 0.5" style="display: none;">
 
             <button id="runButton">Run</button>
             <button id="helpButton" title="Help" class="outline">Help</button>     
@@ -58,6 +55,8 @@
             <select id="sceneSelect" class="scene-select" ></select>
             <button id="removeSceneButton" class="scene-btn" title="Delete script">❌</button>
         </div>
+        
+        <textarea id="savedSceneText" rows="1" class="scene-textarea"> </textarea>
  
     </main>
     <script type="module" src="main.js"></script>

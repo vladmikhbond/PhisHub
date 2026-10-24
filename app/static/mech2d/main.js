@@ -4,7 +4,7 @@ var glo = {
   // conservation of energу when two balls strikes ( 1 - no loss)
   Wk: 0.95,
   // conservation of energу when link reacts ( 1 - no loss)
-  K: 100,
+  K: 1,
   // modulus of elasticity of a ball     
   g: 5e-3,
   // acceleration of gravity  
@@ -734,64 +734,28 @@ var Ball = class _Ball {
 };
 
 // src/controller/params.ts
-function getSizeParams() {
-  const paramsElement = document.getElementById("sizeParams");
-  let ps;
+var infoParams = document.getElementById("infoParams");
+var ballParams = document.getElementById("ballParams");
+var linkParams = document.getElementById("linkParams");
+function getInfoParams() {
   try {
-    ps = new Function(
+    return new Function(
       "",
-      "let W, H;" + paramsElement.value + "; return [W, H]"
+      `return {${infoParams.value}};`
     )();
   } catch {
-    return errMesage("Grammar error", paramsElement);
+    return errMesage("Grammar error", infoParams);
   }
-  if (ps[0] == void 0 || ps[0] <= 0)
-    return errMesage("W: W > 0", paramsElement);
-  if (ps[1] == void 0 || ps[1] <= 0)
-    return errMesage("H: H > 0", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
-}
-function getSpaceParams() {
-  const paramsElement = document.getElementById("spaceParams");
-  let ps;
-  try {
-    ps = new Function(
-      "",
-      "let k, w, u, v, g ;" + paramsElement.value + "; return [k, w, u, v, g]"
-    )();
-  } catch {
-    return errMesage("Grammar error", paramsElement);
-  }
-  const [k, w, u, v, g] = ps;
-  if (k == void 0 || k < 10 || k > 1e3)
-    return errMesage("k: 10 < k < 1000", paramsElement);
-  if (w == void 0 || w < 0 || w > 1)
-    return errMesage("w: 0 <= w < 1", paramsElement);
-  if (u == void 0 || u < 0 || u > 1)
-    return errMesage("u: 0 <= u < 1", paramsElement);
-  if (v == void 0 || v < 0 || v > 1)
-    return errMesage("v: 0 <= v < 1", paramsElement);
-  if (g == void 0 || g < -0.1 || g > 0.1)
-    return errMesage("g: -0.1 < g < 0.1", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
 }
 function getBallParams() {
-  const paramsElement = document.getElementById("ballParams");
-  let ps;
   try {
-    ps = new Function(
+    return new Function(
       "",
-      "let st, m;" + paramsElement.value + "; return [st, m]"
+      `return {${ballParams.value}};`
     )();
   } catch {
-    return errMesage("Grammar error", paramsElement);
+    return errMesage("Grammar error", ballParams);
   }
-  if (!(ps[0] === 0 || ps[0] === 1))
-    return errMesage("st: st = 0 | 1", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
 }
 function errMesage(mes, el) {
   alert(mes);
@@ -855,8 +819,8 @@ var Controller = class {
   view;
   intervalId = 0;
   // base field for timeMode property
-  _mousePos = new Point(0, 0);
   _createMode = 1 /* Ball */;
+  _mousePos = new Point(0, 0);
   constructor(space2, view2) {
     this.space = space2;
     this.view = view2;
@@ -867,22 +831,13 @@ var Controller = class {
     this.addDataHandlers();
   }
   addEventHandlers() {
-    document.getElementById("sizeParams").addEventListener("keydown", (e) => {
+    document.getElementById("infoParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
-        const size = getSizeParams();
-        if (size) {
-          this.setModelSize(...size);
-          takeFocusOff();
-        }
-      }
-    });
-    document.getElementById("spaceParams").addEventListener("keydown", (e) => {
-      if (e.key == "Enter") {
-        const ps = getSpaceParams();
-        if (ps) {
-          [glo.K, glo.W, glo.Wk, glo.Vis, glo.g] = ps;
-          takeFocusOff();
-        }
+        const ps2 = getInfoParams();
+        this.setModelSize(ps2.h, ps2.w);
+        ps2.h = ps2.w = void 0;
+        Object.assign(glo, ps2);
+        takeFocusOff();
       }
     });
     document.getElementById("runButton").addEventListener("click", () => {
@@ -895,11 +850,15 @@ var Controller = class {
       let str = e.target.value;
       const key = str;
       this.createMode = CreateMode[key];
+      let si = document.getElementById("infoParams").style;
       let sb = document.getElementById("ballParams").style;
       let sl = document.getElementById("lineParams").style;
       let sk = document.getElementById("linkParams").style;
-      sb.display = sl.display = sk.display = document.getElementById("ballParams").style.display = "none";
+      si.display = sb.display = sl.display = sk.display = "none";
       switch (this.createMode) {
+        case 0 /* Info */:
+          si.display = "inline";
+          break;
         case 1 /* Ball */:
           sb.display = "inline";
           break;
@@ -950,7 +909,6 @@ var Controller = class {
     this.timeMode = 0 /* Stop */;
     this.view.drawAll();
   }
-
 ///////////////////////////////////////////////////////////////////////
   addDataHandlers() 
   {
@@ -1054,8 +1012,6 @@ var Controller = class {
   }
 ///////////////////////////////////////////////////////////////////////
 
-
-
   //#region Mouse Handlers
   setBallHandlers() {
     let p0 = null;
@@ -1099,13 +1055,10 @@ var Controller = class {
         let p = cursorPoint(e);
         let r = Geometry.distance(p0, p);
         if (r > 2) {
-          let ps = getBallParams();
-          if (ps) {
-            let [st, m] = ps;
-            let newBall = new Ball(p0.x, p0.y, r, "red", 0, 0, st === 1, m);
-            this.space.addBall(newBall);
-            this.space.selBall = newBall;
-          }
+          let ballParams2 = getBallParams();
+          let newBall = new Ball(p0.x, p0.y, r, "red", 0, 0, ballParams2.st === 1, ballParams2.m);
+          this.space.addBall(newBall);
+          this.space.selBall = newBall;
         }
       }
       this.view.drawAll();
@@ -1202,7 +1155,7 @@ var Controller = class {
     return this._createMode;
   }
   //#endregion Mode props          
-  setModelSize(w, h) {
+  setModelSize(h, w) {
     document.documentElement.style.setProperty("--canvas-width", w + "px");
     document.documentElement.style.setProperty("--canvas-height", h + "px");
     this.space.setSize(w, h);
@@ -1224,9 +1177,10 @@ var Controller = class {
 };
 
 // src/main.ts
-[glo.K, glo.W, glo.Wk, glo.Vis, glo.g] = getSpaceParams();
-var space = new Space(...getSizeParams());
+var ps = getInfoParams();
+var space = new Space(ps.h, ps.w);
+ps.h = ps.w = void 0;
+Object.assign(glo, ps);
 var view = new View(space);
 new Controller(space, view);
 view.drawAll();
-

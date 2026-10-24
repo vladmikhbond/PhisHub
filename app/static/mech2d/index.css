@@ -26,7 +26,9 @@ input[type="checkbox"] {
 }
 
 input[type="text"] {
-    width: 200px;
+    width: calc(var(--canvas-width) - 300px);
+    padding: 10px;
+    text-align: center;
 }
 
 select {

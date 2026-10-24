@@ -661,6 +661,23 @@ var DevCont = class {
       this.devices.splice(idx, 1);
     }
   }
+  // select(x: number, y: number) {
+  //     if (this.devices.length == 0) {
+  //        return;
+  //     }
+  //     let devices = this.devices.filter(d => d.isInside(x, y));
+  //     this.space.selectedDevice = devices.length > 0 ? devices[0] : null;
+  // }
+  // removeSelected() {
+  //     if (this.space.selectedDevice == null) {
+  //         return;
+  //     }
+  //     let i = this.devices.indexOf(this.space.selectedDevice);
+  //     if (i > -1) {
+  //         this.devices.splice(i, 1);
+  //         this.space.selectedDevice = null;
+  //     }
+  // }
   clear() {
     this.devices = [];
   }
@@ -1250,23 +1267,16 @@ function xywh(plun) {
 }
 
 // src/controller/params.ts
-function getSizeParams() {
-  const paramsElement = document.getElementById("sizeParams");
-  let ps;
+function getParams(elementId) {
+  const paramsElement = document.getElementById(elementId);
   try {
-    ps = new Function(
+    return new Function(
       "",
-      "let W, H;" + paramsElement.value + "; return [W, H]"
+      `return {${paramsElement.value}};`
     )();
   } catch {
     return errMesage("Grammar error", paramsElement);
   }
-  if (ps[0] == void 0 || ps[0] <= 0)
-    return errMesage("W: W > 0", paramsElement);
-  if (ps[1] == void 0 || ps[1] <= 0)
-    return errMesage("H: H > 0", paramsElement);
-  paramsElement.style.backgroundColor = "";
-  return ps;
 }
 function errMesage(mes, el) {
   alert(mes);
@@ -1920,9 +1930,9 @@ var Interpreter = class _Interpreter {
       }
     }
     if (param == "brython" || param == "rbrython") {
-      const ps = ms.map((m) => m.p);
-      ps.sort((a, b) => a - b);
-      const Pmin = ps[HALF_DEFAULT_DURATION], Pmax = ps[ps.length - HALF_DEFAULT_DURATION];
+      const ps2 = ms.map((m) => m.p);
+      ps2.sort((a, b) => a - b);
+      const Pmin = ps2[HALF_DEFAULT_DURATION], Pmax = ps2[ps2.length - HALF_DEFAULT_DURATION];
       if (param == "brython") {
         const effP = 1 - (Pmin / Pmax) ** 0.5;
         this.view.report("brython", effQ, effP);
@@ -2046,11 +2056,10 @@ var Controller = class {
   addHandlers() {
     document.getElementById("sizeParams").addEventListener("keydown", (e) => {
       if (e.key == "Enter") {
-        const size = getSizeParams();
-        if (size) {
-          [this.space.width, this.space.height] = size;
-          this.setModelSize();
-        }
+        const size = getParams("sizeParams");
+        this.space.width = size.w;
+        this.space.height = size.h;
+        this.setModelSize();
       }
     });
     document.getElementById("helpButton").addEventListener("click", () => {
@@ -2119,19 +2128,15 @@ var Controller = class {
       }
     });
   }
-
   // повертає серіалізовану модель у вигляді рядку JSON
   getCurrentModelAsJson() {
-      const processArea = document.getElementById('processArea'); 
-      return JSON.stringify(processArea.value);
+    const processArea3 = document.getElementById("processArea");
+    return JSON.stringify(processArea3.value);
   }
-
   // оновлює модель з рядку JSON
   setCurrentModelWithJson(jsonStr) {
-      processArea.value = JSON.parse(jsonStr);
+    processArea2.value = JSON.parse(jsonStr);
   }
-
-
 ///////////////////////////////////////////////////////////////////////
   addDataHandlers() 
   {
@@ -2150,7 +2155,8 @@ var Controller = class {
 
     // Наповнює список сцен і завантажує першу сцену
     fillOptions().then(s => {
-      sceneSelect.dispatchEvent(new Event("change"));
+      if (sceneSelect.children.length)
+        sceneSelect.dispatchEvent(new Event("change"));
     });
 
     // Зберегти сцену в базі даних
@@ -2234,8 +2240,6 @@ var Controller = class {
   }
 ///////////////////////////////////////////////////////////////////////
 
-
-
   step() {
     this.time++;
     this.space.step();
@@ -2249,10 +2253,10 @@ var Controller = class {
 };
 
 // src/main.ts
-var space = new Space(...getSizeParams());
+var ps = getParams("sizeParams");
+var space = new Space(ps.w, ps.h);
 var view = new View(space);
 var controller = new Controller(space, view);
 export {
   controller
 };
-//# sourceMappingURL=main.js.map
