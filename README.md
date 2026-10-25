@@ -14,12 +14,12 @@ FastAPI-сервіс для збереження сцен у SQLite.
 
 1. Встановіть розширення VS Code **Dev Containers**.
 2. Відкрийте кореневий каталог проєкту у VS Code і виконайте **Dev Containers: Reopen in Container**.
-3. Після створення контейнера VS Code автоматично створить `.venv` та встановить залежності з `requirements-dev.txt`.
+3. Після створення контейнера VS Code автоматично встановить залежності з `requirements-dev.txt` для поточного користувача; віртуальне середовище не використовується.
 
 Контейнер використовує образ `mcr.microsoft.com/devcontainers/python:1-3.12-bullseye`. Запустіть API в інтегрованому терміналі:
 
 ```sh
-AUTH_COOKIE_SECURE=false uvicorn app.main:app --reload --host 0.0.0.0
+AUTH_COOKIE_SECURE=false python -m uvicorn app.main:app --reload --host 0.0.0.0
 ```
 
 Порт `8000` буде перенаправлено на хост; Swagger доступний за адресою `http://localhost:8000/docs`. Для запуску тестів виконайте `pytest`. Локальна SQLite-база за замовчуванням зберігається у `app.db` в каталозі проєкту.
@@ -39,10 +39,8 @@ API буде доступне на `http://localhost:8000`, документац
 Для локальної розробки без Docker:
 
 ```sh
-python -m venv .venv
-. .venv/bin/activate
-pip install -r requirements-dev.txt
-AUTH_COOKIE_SECURE=false uvicorn app.main:app --reload
+python3 -m pip install --user -r requirements-dev.txt
+AUTH_COOKIE_SECURE=false python3 -m uvicorn app.main:app --reload
 ```
 
 ## Запуск тестів
