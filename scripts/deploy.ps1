@@ -16,7 +16,7 @@ if (-not (Test-Path -LiteralPath $source -PathType Container)) {
 New-Item -ItemType Directory -Path $destination -Force | Out-Null
 
 # Копіювати HTML, CSS та JS файли з оновленням існуючих
-Copy-Item -Path "$source\*.html", "$source\*.css", "$source\*.js" `
+Copy-Item -Path "$source\*.html", "$source\index.css", "$source\main.js" `
     -Destination $destination -Force
 
 Write-Host "Копіювання файлів проєкту $Project завершено."
