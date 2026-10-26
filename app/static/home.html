@@ -38,6 +38,12 @@
         padding: 1rem;
         white-space: pre-wrap;
       }
+
+      .disabled-list {
+        pointer-events: none; /* Повністю блокує кліки, ховер-ефекти та події миші */
+        opacity: 0.5;         /* Робить список напівпрозорим (візуальний маркер) */
+        user-select: none;    /* Забороняє користувачу виділяти текст */
+      }
     </style>
   </head>
   <body>
@@ -47,26 +53,25 @@
         <label for="username">Ім'я користувача</label>
         <input id="username" name="username" autocomplete="username" required value="guest">
 
-        <label for="password">Пароль</label>
+        <label for="password">Пароль - guestguest</label>
         <input id="password" name="password" type="password" autocomplete="current-password" required value="guestguest">
 
         <button type="submit">Увійти</button>
       </form>
       <section aria-live="polite">
-        <p id="login-status"></p>
-        <ul>
-          <li><a href="Maxwell/index.html">Maxwel</a></li>
-          <li><a href="Carno2d/index.html">Carno2d</a></li>
+        <ul id="indexList" class="disabled-list">
+          <li><a href="Mech2d/index.html">Mech2d</a></li>
           <li><a href="Gas2d/index.html">Gas2d</a></li>
+          <li><a href="Carno2d/index.html">Carno2d</a></li>
           <li><a href="Waves1d/index.html">Waves1d</a></li>
           <li><a href="Waves2d/index.html">Waves2d</a></li>
-          <li><a href="Mech2d/index.html">Mech2d</a></li>
+          <li><a href="Maxwell/index.html">Maxwel</a></li>
         </ul>
       </section>
     </main>
     <script>
       const form = document.querySelector("#login-form");
-      const loginStatus = document.querySelector("#login-status");
+      const indexList = document.querySelector("#indexList");
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
@@ -86,7 +91,7 @@
           if (!loginResponse.ok) {
             throw new Error(loginData.detail || `Помилка входу (${loginResponse.status})`);
           }
-          loginStatus.textContent = "Вхід виконано.";
+          indexList.classList.remove("disabled-list");
         } catch (error) {
           alert(error.message);
         }
