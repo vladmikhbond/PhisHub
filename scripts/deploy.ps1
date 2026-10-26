@@ -19,4 +19,5 @@ New-Item -ItemType Directory -Path $destination -Force | Out-Null
 Copy-Item -Path "$source\*.html", "$source\index.css", "$source\main.js" `
     -Destination $destination -Force
 
+
 Write-Host "Копіювання файлів проєкту $Project завершено."
