@@ -1,4 +1,4 @@
-# PhisHub
+# PhysHub
 
 FastAPI-сервіс для збереження сцен у SQLite.
 

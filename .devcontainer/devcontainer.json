@@ -1,5 +1,5 @@
 {
-  "name": "PhisHub Python 3.12",
+  "name": "PhysHub Python 3.12",
   "image": "mcr.microsoft.com/devcontainers/python:1-3.12-bullseye",
   "remoteUser": "vscode",
   "forwardPorts": [8000],

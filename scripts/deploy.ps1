@@ -3,8 +3,8 @@ param(
     [string]$Project
 )
 
-$source = "C:\Git\PHISICS\$Project\dist"
-$destination = "C:\Git\PHISICS\PhisHub\app\static\$Project"
+$source = "C:\Git\PHYSICS\$Project\dist"
+$destination = "C:\Git\PHYSICS\PhysHub\app\static\$Project"
 
 # Перевірити існування вихідної папки
 if (-not (Test-Path -LiteralPath $source -PathType Container)) {
